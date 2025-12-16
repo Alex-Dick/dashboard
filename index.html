@@ -5,11 +5,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Uhr + Statischer Kalender</title>
-  <link rel="icon" href="data:," />
   <style>
     :root{
-      --bg-url: url('https://alex-dick.github.io/dashboard/Winter_1.jpg');
-      /* --bg-url: url('./Winter_1.jpg'); */
+      --bg-url: url('./Winter_1.jpg');
       --bg-blur: 0px;
       --bg-dim: 0.35;
       --panel-bg: rgba(15,23,42,0.55);
@@ -34,7 +32,7 @@
     .panel { border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; background: var(--panel-bg); position: relative; overflow: hidden; -webkit-box-flex: 1; -ms-flex: 1 1 auto; flex: 1 1 auto; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center; }
     .panel-content { padding: 12px; }
 
-    .right { -webkit-box-flex: 1; -ms-flex: 1 1 55%; flex: 1 1 55%; position: relative; padding: 0; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; background: var(--panel-bg); display: none; flex-direction: column; overflow: hidden; min-height: 0; }
+    .right { -webkit-box-flex: 1; -ms-flex: 1 1 55%; flex: 1 1 55%; position: relative; padding: 0; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; background: var(--panel-bg); display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
 
     .header-bar { position: absolute; bottom: 8px; left: 8px; z-index: 3; display: -webkit-box; display: -ms-flexbox; display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.18); border-radius: 10px; }
     .header-bar label { font-size: 0.9rem; opacity: 0.9; }
@@ -743,7 +741,7 @@
 
       document.getElementById('viewSelector').addEventListener('change', function(e){
         currentView = e.target.value;
-        // renderCalendar();
+        renderCalendar();
       });
 
       document.getElementById('prevBtn').addEventListener('click', function(){
@@ -752,7 +750,7 @@
         } else {
           currentDate.setDate(currentDate.getDate() - 7);
         }
-        // renderCalendar();
+        renderCalendar();
       });
 
       document.getElementById('nextBtn').addEventListener('click', function(){
@@ -761,12 +759,12 @@
         } else {
           currentDate.setDate(currentDate.getDate() + 7);
         }
-        // renderCalendar();
+        renderCalendar();
       });
 
       document.getElementById('todayBtn').addEventListener('click', function(){
         currentDate = new Date();
-        // renderCalendar();
+        renderCalendar();
       });
 
       document.getElementById('icsFile').addEventListener('change', function(e){
@@ -815,13 +813,13 @@
         }
       });
 
-      // renderCalendar();
+      renderCalendar();
       
       // Auto-load ICS files from /calendars folder
-      // loadCalendarsFromFolder();
+      loadCalendarsFromFolder();
       
-      window.addEventListener('resize', function(){ /* setTimeout(renderCalendar, 100); */ });
-      window.addEventListener('orientationchange', function(){ /* setTimeout(renderCalendar, 250); */ });
+      window.addEventListener('resize', function(){ setTimeout(renderCalendar, 100); });
+      window.addEventListener('orientationchange', function(){ setTimeout(renderCalendar, 250); });
     })();
   </script>
 </body>
