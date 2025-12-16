@@ -50,7 +50,7 @@
     .calendar-header .center-group { display: flex; align-items: center; gap: 10px; flex: 1; justify-content: center; }
     .calendar-header .right-group { display: flex; align-items: center; }
     .calendar-header h2 { font-size: 1.8rem; font-weight: 600; margin: 0; }
-    .calendar-grid { display: grid; grid-template-columns: 50px repeat(7, 1fr); gap: 8px; flex: 1; overflow-y: auto; overflow-x: hidden; min-height: 0; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) rgba(255,255,255,0.05); -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+    .calendar-grid { display: -ms-grid; display: grid; -ms-grid-columns: 50px (1fr)[7]; grid-template-columns: 50px repeat(7, 1fr); gap: 8px; -webkit-box-flex: 1; -ms-flex: 1; flex: 1; overflow-y: auto; overflow-x: hidden; min-height: 0; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) rgba(255,255,255,0.05); -webkit-overflow-scrolling: touch; touch-action: pan-y; }
     .calendar-grid::-webkit-scrollbar { width: 10px; }
     .calendar-grid::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 5px; margin: 4px 0; }
     .calendar-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 5px; border: 2px solid transparent; background-clip: padding-box; }
@@ -95,7 +95,7 @@
     .today-btn:hover { background: rgba(255,255,255,0.18); }
     
     /* Weekly agenda view */
-    .week-view { display: grid; grid-template-columns: 80px repeat(7, 1fr); gap: 1px; background: rgba(255,255,255,0.05); overflow-y: auto; flex: 1; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) rgba(255,255,255,0.05); -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+    .week-view { display: -ms-grid; display: grid; -ms-grid-columns: 80px (1fr)[7]; grid-template-columns: 80px repeat(7, 1fr); gap: 1px; background: rgba(255,255,255,0.05); overflow-y: auto; -webkit-box-flex: 1; -ms-flex: 1; flex: 1; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) rgba(255,255,255,0.05); -webkit-overflow-scrolling: touch; touch-action: pan-y; }
     .week-view::-webkit-scrollbar { width: 10px; }
     .week-view::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 5px; margin: 4px 0; }
     .week-view::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 5px; border: 2px solid transparent; background-clip: padding-box; }
@@ -356,16 +356,12 @@
         document.getElementById('icsStatus').textContent = 'Lade Kalender...';
         
         icsFiles.forEach(function(filename){
-          fetch('calendars/' + filename)
-            .then(function(response){
-              if (!response.ok) {
-                throw new Error('File not found: ' + filename);
-              }
-              return response.text();
-            })
-            .then(function(icsContent){
+          var xhr = new XMLHttpRequest();
+          xhr.open('GET', 'calendars/' + filename, true);
+          xhr.onload = function(){
+            if (xhr.status >= 200 && xhr.status < 300) {
               console.log('Loaded:', filename);
-              var events = parseICS(icsContent);
+              var events = parseICS(xhr.responseText);
               allEvents = allEvents.concat(events);
               loadedCount++;
               
@@ -374,9 +370,8 @@
                 loadEvents(allEvents);
                 document.getElementById('icsStatus').textContent = allEvents.length + ' Termine aus ' + totalFiles + ' Datei(en) geladen';
               }
-            })
-            .catch(function(error){
-              console.warn('Could not load', filename + ':', error.message);
+            } else {
+              console.warn('Could not load', filename + ':', xhr.statusText);
               loadedCount++;
               
               if (loadedCount === totalFiles) {
@@ -388,7 +383,23 @@
                   document.getElementById('icsStatus').textContent = 'Keine Kalender gefunden. Bitte Dateien laden.';
                 }
               }
-            });
+            }
+          };
+          xhr.onerror = function(){
+            console.warn('Could not load', filename + ': Network error');
+            loadedCount++;
+            
+            if (loadedCount === totalFiles) {
+              console.log('Calendar loading complete. Total events:', allEvents.length);
+              if (allEvents.length > 0) {
+                loadEvents(allEvents);
+                document.getElementById('icsStatus').textContent = allEvents.length + ' Termine geladen (einige Dateien fehlten)';
+              } else {
+                document.getElementById('icsStatus').textContent = 'Keine Kalender gefunden. Bitte Dateien laden.';
+              }
+            }
+          };
+          xhr.send();
         });
       }
 
