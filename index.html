@@ -4,36 +4,35 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Dashboard</title>
+  <title>Uhr + Statischer Kalender</title>
   <style>
     :root{
-      --bg-url: url('./Winter_1.jpg');
+      --bg-url: url('file://D:/Wallpaper/Winter_1.jpg');
       --bg-blur: 0px;
       --bg-dim: 0.35;
       --panel-bg: rgba(15,23,42,0.55);
       --calendar-opacity: 0.5;   /* calendar opacity */
       --date-font-size: 2.6rem;
-      --weather-opacity: 0.9;    /* weather widget overall opacity: 0.6–1.0 */
     }
 
-    html, body { height: 100%; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    html, body { height: 100%; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; overflow: hidden; }
 
     .bg { position: fixed; inset: 0; z-index: -2; background-image: var(--bg-url); background-size: cover; background-position: center; background-repeat: no-repeat; -webkit-filter: blur(var(--bg-blur)); filter: blur(var(--bg-blur)); transform: translateZ(0); }
     .bg-dim { position: fixed; inset: 0; z-index: -1; background: rgba(15,23,42, var(--bg-dim)); }
 
     body { background:#0f172a; color:#e2e8f0; }
 
-    .wrap { position: relative; width: 100%; min-height: 100vh; box-sizing: border-box; padding: 46px; gap: 16px; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; }
+    .wrap { position: relative; width: 100%; height: 100vh; box-sizing: border-box; padding: 46px; gap: 16px; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; }
 
     .left, .right { box-sizing: border-box; }
 
     /* Left column becomes a stack: clock panel + weather panel */
-    .left { -webkit-box-flex: 1; -ms-flex: 1 1 45%; flex: 1 1 45%; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; gap: 16px; border: none; background: transparent; padding: 0; }
+    .left { -webkit-box-flex: 1; -ms-flex: 1 1 45%; flex: 1 1 45%; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; gap: 16px; border: none; background: transparent; padding: 0; min-height: 0; }
 
-    .panel { border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; background: var(--panel-bg); position: relative; overflow: hidden; }
+    .panel { border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; background: var(--panel-bg); position: relative; overflow: hidden; -webkit-box-flex: 1; -ms-flex: 1 1 auto; flex: 1 1 auto; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center; }
     .panel-content { padding: 12px; }
 
-    .right { -webkit-box-flex: 1; -ms-flex: 1 1 55%; flex: 1 1 55%; position: relative; padding: 0; overflow: hidden; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; background: var(--panel-bg); }
+    .right { -webkit-box-flex: 1; -ms-flex: 1 1 55%; flex: 1 1 55%; position: relative; padding: 0; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; background: var(--panel-bg); display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
 
     .header-bar { position: absolute; bottom: 8px; left: 8px; z-index: 3; display: -webkit-box; display: -ms-flexbox; display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.18); border-radius: 10px; }
     .header-bar label { font-size: 0.9rem; opacity: 0.9; }
@@ -44,14 +43,75 @@
     .time { font-size: 14vw; font-weight: 700; text-shadow: 0 2px 8px rgba(0,0,0,0.5); }
     .seconds { font-size: 7vw; opacity: 0.9; margin-left: 0.4em; text-shadow: 0 2px 8px rgba(0,0,0,0.5); display: none; }
 
-    .cal-frame { position: absolute; top:0; left:0; width:100%; height:100%; border:0; background: transparent; opacity: var(--calendar-opacity); }
-    .dark-embed .cal-frame { -webkit-filter: invert(1) hue-rotate(180deg); filter: invert(1) hue-rotate(180deg); }
-
-    /* Weather widget transparency: remove any internal backgrounds and set overall opacity */
-    .weather-box { padding: 8px; }
-    .weatherwidget-io { background: transparent !important; border: 0 !important; opacity: var(--weather-opacity); }
-    /* If the widget injects an iframe, make sure it is also transparent */
-    .weather-box iframe { background: transparent !important; }
+    /* Static Calendar Styles */
+    .calendar-container { padding: 20px; flex: 1; display: flex; flex-direction: column; min-height: 0; -webkit-overflow-scrolling: touch; }
+    .calendar-header { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 20px; flex-shrink: 0; padding: 10px 15px; background: rgba(255,255,255,0.05); border-radius: 10px; }
+    .calendar-header .left-group { display: flex; align-items: center; gap: 10px; }
+    .calendar-header .center-group { display: flex; align-items: center; gap: 10px; flex: 1; justify-content: center; }
+    .calendar-header .right-group { display: flex; align-items: center; }
+    .calendar-header h2 { font-size: 1.8rem; font-weight: 600; margin: 0; }
+    .calendar-grid { display: grid; grid-template-columns: 50px repeat(7, 1fr); gap: 8px; flex: 1; overflow-y: auto; overflow-x: hidden; min-height: 0; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) rgba(255,255,255,0.05); -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+    .calendar-grid::-webkit-scrollbar { width: 10px; }
+    .calendar-grid::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 5px; margin: 4px 0; }
+    .calendar-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 5px; border: 2px solid transparent; background-clip: padding-box; }
+    .calendar-grid::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.35); background-clip: padding-box; }
+    .calendar-day-header { text-align: center; font-weight: 600; padding: 10px; opacity: 0.7; font-size: 0.9rem; }
+    .week-number { text-align: center; font-size: 0.8rem; color: rgba(255,255,255,0.5); padding: 8px 4px; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+    .calendar-day { background: rgba(255,255,255,0.08); border-radius: 8px; padding: 6px 4px 4px 4px; text-align: left; height: 60px; max-height: 75px; border: 1px solid rgba(255,255,255,0.1); transition: all 0.2s; position: relative; cursor: pointer; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; overflow: hidden; }
+    .calendar-day:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
+    .calendar-day.empty { opacity: 0.3; }
+    .calendar-day.today { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.6); }
+    .day-number { font-size: 0.9rem; margin-bottom: 4px; padding: 0 4px; font-weight: 600; flex-shrink: 0; }
+    .day-events { display: flex; flex-direction: column; gap: 2px; overflow: hidden; flex: 1; min-height: 0; }
+    .month-event { background: rgba(251,146,60,0.8); border-left: 3px solid rgba(251,146,60,1); border-radius: 3px; padding: 2px 4px; font-size: 0.7rem; line-height: 1.3; overflow: hidden; cursor: pointer; transition: all 0.2s; word-wrap: break-word; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; max-height: 2.6em; }
+    .month-event:hover { background: rgba(251,146,60,0.95); transform: translateX(2px); }
+    .month-event.holiday { background: rgba(139,92,246,0.8); border-left-color: rgba(139,92,246,1); }
+    .month-event.birthday { background: rgba(251,191,36,0.8); border-left-color: rgba(251,191,36,1); }
+    .month-event-time { font-weight: 600; margin-right: 4px; }
+    .month-more { font-size: 0.7rem; padding: 2px 4px; color: rgba(255,255,255,0.6); cursor: pointer; }
+    .month-more:hover { color: rgba(255,255,255,0.9); }
+    .event-dots { display: flex; gap: 3px; flex-wrap: wrap; justify-content: center; margin-top: 4px; }
+    .event-dot { width: 5px; height: 5px; background: rgba(34,197,94,0.7); border-radius: 50%; }
+    .event-tooltip { position: absolute; z-index: 1000; background: rgba(15,23,42,0.95); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 10px; min-width: 200px; max-width: 300px; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+    .calendar-day:hover .event-tooltip { display: block; }
+    .event-item { margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .event-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .event-time { font-size: 0.75rem; color: rgba(34,197,94,0.9); font-weight: 600; }
+    .event-title { font-size: 0.85rem; margin-top: 2px; }
+    .ics-upload { margin-bottom: 15px; display: none; gap: 10px; align-items: center; flex-shrink: 0; }
+    .ics-upload input[type="file"] { display: none; }
+    .ics-upload label { background: rgba(59,130,246,0.3); border: 1px solid rgba(59,130,246,0.6); border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+    .ics-upload label:hover { background: rgba(59,130,246,0.4); }
+    .ics-upload label svg { width: 20px; height: 20px; fill: currentColor; }
+    .ics-status { font-size: 0.85rem; opacity: 0.8; }
+    .calendar-controls { display: none; }
+    .view-selector { background: rgba(255,255,255,0.12); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.18); border-radius: 8px; padding: 6px 10px; font-size: 0.9rem; cursor: pointer; outline: none; }
+    .view-selector option { background: rgba(15,23,42,0.95); color: #e2e8f0; padding: 8px; }
+    .view-selector:focus { border-color: rgba(59,130,246,0.6); }
+    .nav-btn { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.18); border-radius: 8px; padding: 8px 14px; cursor: pointer; font-size: 0.9rem; color: #e2e8f0; transition: all 0.2s; border: none; outline: none; }
+    .nav-btn:hover { background: rgba(255,255,255,0.18); }
+    .nav-btn.arrow { width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border-radius: 50%; }
+    .today-btn { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.18); }
+    .today-btn:hover { background: rgba(255,255,255,0.18); }
+    
+    /* Weekly agenda view */
+    .week-view { display: grid; grid-template-columns: 80px repeat(7, 1fr); gap: 1px; background: rgba(255,255,255,0.05); overflow-y: auto; flex: 1; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) rgba(255,255,255,0.05); -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+    .week-view::-webkit-scrollbar { width: 10px; }
+    .week-view::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 5px; margin: 4px 0; }
+    .week-view::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 5px; border: 2px solid transparent; background-clip: padding-box; }
+    .week-view::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.35); background-clip: padding-box; }
+    .week-header { background: var(--panel-bg); padding: 10px 5px; text-align: center; font-weight: 600; position: sticky; top: 0; z-index: 10; }
+    .week-header.time-col { font-size: 0.8rem; }
+    .week-header .day-name { font-size: 0.7rem; opacity: 0.7; }
+    .week-header .day-num { font-size: 1.2rem; margin-top: 2px; }
+    .week-header.today-col { background: rgba(59,130,246,0.3); }
+    .time-slot { background: var(--panel-bg); padding: 5px; text-align: right; font-size: 0.75rem; color: rgba(255,255,255,0.6); border-top: 1px solid rgba(255,255,255,0.05); }
+    .day-col { background: rgba(255,255,255,0.02); border-top: 1px solid rgba(255,255,255,0.05); position: relative; min-height: 60px; }
+    .day-col.today-col { background: rgba(59,130,246,0.05); }
+    .week-event { position: absolute; left: 2px; right: 2px; background: rgba(251,146,60,0.7); border-left: 3px solid rgba(251,146,60,1); border-radius: 4px; padding: 4px 6px; font-size: 0.75rem; overflow: hidden; cursor: pointer; transition: all 0.2s; z-index: 5; }
+    .week-event:hover { background: rgba(251,146,60,0.85); z-index: 6; }
+    .week-event-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .week-event-time { font-size: 0.65rem; opacity: 0.9; margin-top: 1px; }
 
     @media (orientation: portrait) { .wrap { -webkit-box-orient: vertical; -ms-flex-direction: column; flex-direction: column; } .time { font-size: 18vw; } .seconds { font-size: 9vw; } }
   </style>
@@ -72,22 +132,53 @@
           </div>
         </div>
       </section>
-
-      <!-- WEATHER PANEL (transparent widget) -->
-      <section class="panel" aria-label="Wetter Panel">
-        <div class="panel-content weather-box">
-          <a class="weatherwidget-io" href="https://forecast7.com/en/48d372010/augsburg/"
-             data-label_1="Augsburg" data-label_2="Wetter" data-icons="Climacons Animated"
-             data-mode="Forecast" data-days="5" data-theme="dark"
-             data-basecolor="rgba(0,0,0,0)" data-textcolor="#e2e8f0" data-highcolor="#f87171" data-lowcolor="#60a5fa">Augsburg Wetter</a>
-        </div>
-      </section>
     </div>
 
-    <div class="right dark-embed">
-      <iframe id="gcal" 
-            class="cal-frame"
-            src="https://calendar.google.com/calendar/embed?height=600&amp;wkst=2&amp;ctz=Europe%2FBerlin&amp;showPrint=0&amp;showTz=0&amp;showCalendars=0&amp;src=YWxleC5kaWNrLmdtQGdvb2dsZW1haWwuY29t&amp;src=ZGUuZ2VybWFuI2hvbGlkYXlAZ3JvdXAudi5jYWxlbmRhci5nb29nbGUuY29t&amp;color=%238c500b&amp;color=%23060d5e" style="border-width:0" width="800" height="600" frameborder="0" scrolling="no"></iframe>
+    <div class="right">
+      <div class="calendar-container">
+        <div class="calendar-header">
+          <div class="left-group">
+            <button id="todayBtn" class="nav-btn today-btn">Heute</button>
+          </div>
+          <div class="center-group">
+            <button id="prevBtn" class="nav-btn arrow">&lt;</button>
+            <h2 id="calendarMonth" style="margin: 0; font-size: 1.1rem; line-height: 1.3; text-align: center; max-width: 300px;">Dezember 2025</h2>
+            <button id="nextBtn" class="nav-btn arrow">&gt;</button>
+          </div>
+          <div class="right-group">
+            <input type="file" id="icsFile" accept=".ics" multiple style="display: none;" />
+            <label for="icsFile" class="nav-btn" title="ICS Dateien laden" style="width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; margin-right: 10px;">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width: 20px; height: 20px; fill: currentColor;">
+                <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zM7 12h5v5H7z"/>
+              </svg>
+            </label>
+            <select id="viewSelector" class="view-selector">
+              <option value="month">Monat</option>
+              <option value="week">Woche</option>
+            </select>
+          </div>
+        </div>
+        <div class="ics-upload">
+          <input type="file" id="icsFile" accept=".ics" multiple />
+          <label for="icsFile" title="ICS Dateien laden">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zM7 12h5v5H7z"/>
+            </svg>
+          </label>
+          <span id="icsStatus" class="ics-status"></span>
+        </div>
+        <div id="calendarGrid" class="calendar-grid">
+          <div class="calendar-day-header" style="opacity: 0.4; font-size: 0.75rem;">KW</div>
+          <div class="calendar-day-header">Mo</div>
+          <div class="calendar-day-header">Di</div>
+          <div class="calendar-day-header">Mi</div>
+          <div class="calendar-day-header">Do</div>
+          <div class="calendar-day-header">Fr</div>
+          <div class="calendar-day-header">Sa</div>
+          <div class="calendar-day-header">So</div>
+          <div id="calendarDays" style="grid-column: 1 / -1; display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -108,66 +199,618 @@
       }
       updateClock(); setInterval(updateClock, 1000);
 
-      function setHeights(){
-        var wrap = document.getElementById('wrap');
-        var gcal = document.getElementById('gcal');
-        var h = window.innerHeight || document.documentElement.clientHeight || 600;
-        if (wrap) wrap.style.height = h + 'px';
-        if (gcal) {
-          var src = gcal.getAttribute('src') || '';
-          src = src.replace(/([&?])height=\d+/,'$1');
-          var sep = src.indexOf('?') === -1 ? '?' : '&';
-          src = src + sep + 'height=' + h;
-          gcal.setAttribute('src', src);
+      var calendarEvents = {};
+      var currentView = 'month';
+      var currentDate = new Date();
+
+      function parseICS(icsContent){
+        console.log('Parsing ICS file, size:', icsContent.length, 'bytes');
+        var events = [];
+        var lines = icsContent.split(/\r?\n/);
+        var currentEvent = null;
+        
+        console.log('Total lines:', lines.length);
+        
+        // Unfold lines (handle line continuation)
+        var unfoldedLines = [];
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i];
+          if (i > 0 && (line[0] === ' ' || line[0] === '\t')) {
+            unfoldedLines[unfoldedLines.length - 1] += line.substring(1);
+          } else {
+            unfoldedLines.push(line);
+          }
+        }
+        console.log('Unfolded lines:', unfoldedLines.length);
+        
+        for (var i = 0; i < unfoldedLines.length; i++) {
+          var line = unfoldedLines[i].trim();
+          if (!line) continue;
+          
+          if (line === 'BEGIN:VEVENT') {
+            currentEvent = {};
+          } else if (line === 'END:VEVENT' && currentEvent) {
+            if (currentEvent.start) {
+              events.push(currentEvent);
+            }
+            currentEvent = null;
+          } else if (currentEvent) {
+            var colonIndex = line.indexOf(':');
+            if (colonIndex === -1) continue;
+            
+            var key = line.substring(0, colonIndex);
+            var value = line.substring(colonIndex + 1);
+            
+            if (key.indexOf('DTSTART') === 0) {
+              try {
+                currentEvent.start = parseDateString(value);
+              } catch(e) {
+                console.log('Error parsing start date:', value);
+              }
+            } else if (key.indexOf('DTEND') === 0) {
+              try {
+                currentEvent.end = parseDateString(value);
+              } catch(e) {
+                console.log('Error parsing end date:', value);
+              }
+            } else if (key.indexOf('SUMMARY') === 0) {
+              currentEvent.title = value;
+            }
+          }
+        }
+        return events;
+      }
+
+      function parseDateString(dateStr){
+        if (!dateStr) return null;
+        // Clean up the date string
+        dateStr = dateStr.trim();
+        
+        // Format: YYYYMMDD or YYYYMMDDTHHMMSSZ
+        try {
+          var year = parseInt(dateStr.substring(0, 4), 10);
+          var month = parseInt(dateStr.substring(4, 6), 10) - 1;
+          var day = parseInt(dateStr.substring(6, 8), 10);
+          
+          if (isNaN(year) || isNaN(month) || isNaN(day)) {
+            return null;
+          }
+          
+          var hour = 0, minute = 0;
+          if (dateStr.length > 8 && dateStr.indexOf('T') !== -1) {
+            var timeStart = dateStr.indexOf('T') + 1;
+            hour = parseInt(dateStr.substring(timeStart, timeStart + 2), 10) || 0;
+            minute = parseInt(dateStr.substring(timeStart + 2, timeStart + 4), 10) || 0;
+          }
+          
+          var date = new Date(year, month, day, hour, minute);
+          return isNaN(date.getTime()) ? null : date;
+        } catch(e) {
+          return null;
         }
       }
 
-      function setMode(mode){
-        try {
-          var gcal = document.getElementById('gcal');
-          var src = gcal.getAttribute('src') || '';
-          if (/([&?])mode=([A-Z]+)/.test(src)) {
-            src = src.replace(/([&?])mode=([A-Z]+)/, '$1mode=' + mode);
-          } else {
-            var sep = src.indexOf('?') === -1 ? '?' : '&';
-            src = src + sep + 'mode=' + mode;
+      function formatTime(date){
+        if (!date) return '';
+        var h = date.getHours();
+        var m = date.getMinutes();
+        return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+      }
+
+      function getDateKey(date){
+        return date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate();
+      }
+
+      function loadEvents(events){
+        console.log('Total events loaded:', events.length);
+        calendarEvents = {};
+        
+        var now = new Date();
+        var currentYear = now.getFullYear();
+        var currentMonth = now.getMonth();
+        
+        var filteredCount = 0;
+        for (var i = 0; i < events.length; i++) {
+          var event = events[i];
+          if (!event.start) continue;
+          
+          // Only include events from current year (performance optimization)
+          if (event.start.getFullYear() === currentYear) {
+            var key = getDateKey(event.start);
+            if (!calendarEvents[key]) {
+              calendarEvents[key] = [];
+            }
+            // Limit to 10 events per day to prevent DOM overload
+            if (calendarEvents[key].length < 10) {
+              calendarEvents[key].push(event);
+              filteredCount++;
+            }
           }
-          gcal.setAttribute('src', src);
-          try { localStorage.setItem('calMode', mode); } catch(e){}
-        } catch(e){}
+        }
+        console.log('Events for current year:', filteredCount);
+        renderCalendar();
       }
 
-      function initMode(){
-        var saved = null; try { saved = localStorage.getItem('calMode'); } catch(e){}
-        var select = document.getElementById('viewSelect');
-        var mode = saved || 'MONTH';
-        if (select) select.value = mode;
-        setMode(mode);
-        setHeights();
-      }
-
-      var select = document.getElementById('viewSelect');
-      if (select) {
-        select.addEventListener('change', function(){
-          setMode(select.value);
-          setTimeout(setHeights, 300);
+      function loadCalendarsFromFolder(){
+        // This function only works when running from a web server (http://)
+        // Check if we're running from file:// protocol
+        if (window.location.protocol === 'file:') {
+          console.log('Auto-load disabled: Running from file:// protocol.');
+          console.log('To enable auto-load, run a local web server or use the upload button to select multiple files.');
+          // document.getElementById('icsStatus').textContent = 'Bitte ICS Dateien laden';
+          return;
+        }
+        
+        // List of ICS files to load from the /calendars subfolder
+        var icsFiles = [
+          'basic.ics',
+          'calendar2.ics',
+          'feiertage-deutschland.ics'
+        ];
+        
+        var allEvents = [];
+        var loadedCount = 0;
+        var totalFiles = icsFiles.length;
+        
+        console.log('Loading', totalFiles, 'ICS files from /calendars folder...');
+        document.getElementById('icsStatus').textContent = 'Lade Kalender...';
+        
+        icsFiles.forEach(function(filename){
+          fetch('calendars/' + filename)
+            .then(function(response){
+              if (!response.ok) {
+                throw new Error('File not found: ' + filename);
+              }
+              return response.text();
+            })
+            .then(function(icsContent){
+              console.log('Loaded:', filename);
+              var events = parseICS(icsContent);
+              allEvents = allEvents.concat(events);
+              loadedCount++;
+              
+              if (loadedCount === totalFiles) {
+                console.log('All calendar files loaded. Total events:', allEvents.length);
+                loadEvents(allEvents);
+                document.getElementById('icsStatus').textContent = allEvents.length + ' Termine aus ' + totalFiles + ' Datei(en) geladen';
+              }
+            })
+            .catch(function(error){
+              console.warn('Could not load', filename + ':', error.message);
+              loadedCount++;
+              
+              if (loadedCount === totalFiles) {
+                console.log('Calendar loading complete. Total events:', allEvents.length);
+                if (allEvents.length > 0) {
+                  loadEvents(allEvents);
+                  document.getElementById('icsStatus').textContent = allEvents.length + ' Termine geladen (einige Dateien fehlten)';
+                } else {
+                  document.getElementById('icsStatus').textContent = 'Keine Kalender gefunden. Bitte Dateien laden.';
+                }
+              }
+            });
         });
       }
 
-      // Load WeatherWidget.io script
-      function loadWeatherWidget(){
-        var d=document, s='script', id='weatherwidget-io-js';
-        if (!d.getElementById(id)){
-          var js=d.createElement(s); js.id=id; js.src='https://weatherwidget.io/js/widget.min.js';
-          var fjs=d.getElementsByTagName(s)[0]; fjs.parentNode.insertBefore(js, fjs);
+      function renderCalendar(){
+        console.log('Rendering calendar...');
+        try {
+          if (currentView === 'month') {
+            renderMonthView();
+          } else {
+            renderWeekView();
+          }
+          console.log('Calendar rendered successfully');
+        } catch(err) {
+          console.error('Error rendering calendar:', err);
+          document.getElementById('icsStatus').textContent = 'Fehler beim Anzeigen: ' + err.message;
         }
       }
 
-      initMode();
-      loadWeatherWidget();
-      window.addEventListener('resize', function(){ setTimeout(setHeights, 100); });
-      window.addEventListener('orientationchange', function(){ setTimeout(setHeights, 250); });
+      function renderMonthView(){
+        var year = currentDate.getFullYear();
+        var month = currentDate.getMonth();
+        var today = new Date();
+        
+        var months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+        document.getElementById('calendarMonth').textContent = months[month] + ' ' + year;
+        
+        // Reset grid layout for month view
+        var calendarGrid = document.getElementById('calendarGrid');
+        calendarGrid.className = 'calendar-grid';
+        calendarGrid.innerHTML = '';
+        
+        // Add week number header
+        var kwHeader = document.createElement('div');
+        kwHeader.className = 'calendar-day-header';
+        kwHeader.style.opacity = '0.2';
+        kwHeader.style.fontSize = '0.9rem';
+        kwHeader.textContent = 'KW';
+        calendarGrid.appendChild(kwHeader);
+        
+        // Add day headers
+        var dayHeaders = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+        for (var i = 0; i < dayHeaders.length; i++) {
+          var header = document.createElement('div');
+          header.className = 'calendar-day-header';
+          header.textContent = dayHeaders[i];
+          calendarGrid.appendChild(header);
+        }
+        
+        var calendarDays = document.createElement('div');
+        calendarDays.id = 'calendarDays';
+        calendarDays.style.gridColumn = '1 / -1';
+        calendarDays.style.display = 'grid';
+        calendarDays.style.gridTemplateColumns = '50px repeat(7, 1fr)';
+        calendarDays.style.gap = '8px';
+        calendarGrid.appendChild(calendarDays);
+        
+        var firstDay = new Date(year, month, 1).getDay();
+        firstDay = firstDay === 0 ? 6 : firstDay - 1; // Monday = 0
+        
+        var daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        // Build calendar with week numbers
+        var dayCount = 0;
+        var currentWeekDiv = null;
+        
+        // Empty cells before first day
+        if (firstDay > 0) {
+          // Add week number for first week
+          var firstDate = new Date(year, month, 1);
+          var weekNum = document.createElement('div');
+          weekNum.className = 'week-number';
+          weekNum.textContent = getWeekNumber(firstDate);
+          calendarDays.appendChild(weekNum);
+          
+          for (var i = 0; i < firstDay; i++) {
+            var emptyDay = document.createElement('div');
+            emptyDay.className = 'calendar-day empty';
+            calendarDays.appendChild(emptyDay);
+            dayCount++;
+          }
+        } else {
+          // Week starts on Monday, add week number
+          var firstDate = new Date(year, month, 1);
+          var weekNum = document.createElement('div');
+          weekNum.className = 'week-number';
+          weekNum.textContent = getWeekNumber(firstDate);
+          calendarDays.appendChild(weekNum);
+        }
+        
+        // Days of month
+        for (var day = 1; day <= daysInMonth; day++) {
+          // Add week number at start of each week (Monday)
+          if (dayCount % 7 === 0 && dayCount > 0) {
+            var dateForWeek = new Date(year, month, day);
+            var weekNum = document.createElement('div');
+            weekNum.className = 'week-number';
+            weekNum.textContent = getWeekNumber(dateForWeek);
+            calendarDays.appendChild(weekNum);
+          }
+          
+          var isToday = (today.getDate() === day && today.getMonth() === month && today.getFullYear() === year);
+          var dayDiv = createDayCell(year, month, day, isToday, 'month');
+          calendarDays.appendChild(dayDiv);
+          dayCount++;
+        }
+      }
+
+      function renderWeekView(){
+        var weekStart = getWeekStart(currentDate);
+        var year = weekStart.getFullYear();
+        
+        // var months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+        var months = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+        var weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        
+        // var weekText = 'KW ' + getWeekNumber(weekStart) + '\n' + 
+        //   weekStart.getDate() + '. ' + months[weekStart.getMonth()] + ' - ' + 
+        //   weekEnd.getDate() + '. ' + months[weekEnd.getMonth()] + ' ' + year;
+         var weekText = weekStart.getDate() + '. ' + months[weekStart.getMonth()] + ' - ' + 
+          weekEnd.getDate() + '. ' + months[weekEnd.getMonth()] + ' ' + year;
+        document.getElementById('calendarMonth').innerHTML = weekText.replace('\n', '<br>')
+        
+        var calendarGrid = document.getElementById('calendarGrid');
+        calendarGrid.innerHTML = '';
+        calendarGrid.className = 'week-view';
+        
+        var today = new Date();
+        var dayNames = ['MO','DI','MI','DO','FR','SA','SO'];
+        
+        // Header row - empty corner + day headers
+        var timeColHeader = document.createElement('div');
+        timeColHeader.className = 'week-header time-col';
+        timeColHeader.style.opacity = '0.4';
+        // timeColHeader.textContent = 'GMT+01';
+        timeColHeader.textContent ='KW ' + getWeekNumber(weekStart)
+        calendarGrid.appendChild(timeColHeader);
+        
+        var weekDates = [];
+        for (var i = 0; i < 7; i++) {
+          var date = new Date(weekStart);
+          date.setDate(date.getDate() + i);
+          weekDates.push(date);
+          
+          var isToday = (today.getDate() === date.getDate() && 
+                        today.getMonth() === date.getMonth() && 
+                        today.getFullYear() === date.getFullYear());
+          
+          var dayHeader = document.createElement('div');
+          dayHeader.className = 'week-header' + (isToday ? ' today-col' : '');
+          dayHeader.innerHTML = '<div class="day-name">' + dayNames[i] + '</div><div class="day-num">' + date.getDate() + '</div>';
+          calendarGrid.appendChild(dayHeader);
+        }
+        
+        // Time slots from 00:00 to 23:00
+        for (var hour = 0; hour < 24; hour++) {
+          // Time label
+          var timeSlot = document.createElement('div');
+          timeSlot.className = 'time-slot';
+          timeSlot.textContent = (hour < 10 ? '0' : '') + hour + ':00';
+          calendarGrid.appendChild(timeSlot);
+          
+          // Day columns for this hour
+          for (var i = 0; i < 7; i++) {
+            var date = weekDates[i];
+            var isToday = (today.getDate() === date.getDate() && 
+                          today.getMonth() === date.getMonth() && 
+                          today.getFullYear() === date.getFullYear());
+            
+            var dayCol = document.createElement('div');
+            dayCol.className = 'day-col' + (isToday ? ' today-col' : '');
+            dayCol.dataset.date = getDateKey(date);
+            dayCol.dataset.hour = hour;
+            
+            // Add events for this hour
+            var dateKey = getDateKey(date);
+            var dayEvents = calendarEvents[dateKey];
+            
+            if (dayEvents && hour === 0) {
+              // Process all events for this day (only in first hour to avoid duplicates)
+              for (var e = 0; e < dayEvents.length; e++) {
+                var evt = dayEvents[e];
+                var eventHour = evt.start.getHours();
+                var eventMinute = evt.start.getMinutes();
+                var eventDuration = 1; // Default 1 hour
+                
+                if (evt.end) {
+                  var durationMs = evt.end - evt.start;
+                  eventDuration = durationMs / (1000 * 60 * 60); // Convert to hours
+                }
+                
+                // We'll position these absolutely after the grid is built
+                var eventDiv = document.createElement('div');
+                eventDiv.className = 'week-event';
+                eventDiv.innerHTML = '<div class="week-event-title">' + (evt.title || 'Ohne Titel') + '</div>' +
+                                    '<div class="week-event-time">' + formatTime(evt.start) + 
+                                    (evt.end ? ' bis ' + formatTime(evt.end) : '') + '</div>';
+                
+                // Calculate position: each hour is one row (60px min-height)
+                var topPosition = eventHour * 60 + (eventMinute / 60) * 60;
+                var height = eventDuration * 60;
+                
+                eventDiv.style.top = topPosition + 'px';
+                eventDiv.style.height = Math.max(height - 4, 20) + 'px';
+                
+                // Find the correct day column
+                setTimeout((function(ev, col, hr){
+                  return function(){
+                    var targetCol = document.querySelector('.day-col[data-date="' + col + '"][data-hour="' + hr + '"]');
+                    if (targetCol && targetCol.parentElement) {
+                      var wrapper = targetCol.parentElement.querySelector('.day-col[data-date="' + col + '"][data-hour="0"]');
+                      if (wrapper) {
+                        wrapper.style.position = 'relative';
+                        wrapper.appendChild(ev);
+                      }
+                    }
+                  };
+                })(eventDiv, dateKey, eventHour), 0);
+              }
+            }
+            
+            calendarGrid.appendChild(dayCol);
+          }
+        }
+      }
+
+      function createDayCell(year, month, day, isToday, viewType){
+        var dayDiv = document.createElement('div');
+        dayDiv.className = 'calendar-day';
+        if (isToday) {
+          dayDiv.className += ' today';
+        }
+        
+        var dateKey = year + '-' + (month + 1) + '-' + day;
+        var dayEvents = calendarEvents[dateKey];
+        
+        var dayNumber = document.createElement('div');
+        dayNumber.className = 'day-number';
+        dayNumber.textContent = day;
+        dayDiv.appendChild(dayNumber);
+        
+        if (dayEvents && dayEvents.length > 0) {
+          if (viewType === 'month') {
+            // Show events inline for month view
+            var eventsContainer = document.createElement('div');
+            eventsContainer.className = 'day-events';
+            
+            var maxEventsToShow = 3;
+            var eventsToShow = Math.min(dayEvents.length, maxEventsToShow);
+            
+            for (var e = 0; e < eventsToShow; e++) {
+              var evt = dayEvents[e];
+              var eventDiv = document.createElement('div');
+              eventDiv.className = 'month-event';
+              
+              // Categorize events
+              var title = evt.title || 'Ohne Titel';
+              if (title.toLowerCase().indexOf('geburtstag') !== -1 || title.toLowerCase().indexOf('birthday') !== -1) {
+                eventDiv.className += ' birthday';
+              } else if (title.toLowerCase().indexOf('feiertag') !== -1 || title.toLowerCase().indexOf('holiday') !== -1 || 
+                         title.toLowerCase().indexOf('advent') !== -1 || title.toLowerCase().indexOf('weihnachten') !== -1 ||
+                         title.toLowerCase().indexOf('ostern') !== -1 || title.toLowerCase().indexOf('pfingsten') !== -1) {
+                eventDiv.className += ' holiday';
+              }
+              
+              var timeText = '';
+              if (evt.start.getHours() !== 0 || evt.start.getMinutes() !== 0) {
+                timeText = '<span class="month-event-time">' + formatTime(evt.start) + '</span>';
+              }
+              
+              eventDiv.innerHTML = timeText + title;
+              eventDiv.title = (timeText ? formatTime(evt.start) + ' ' : '') + title;
+              eventsContainer.appendChild(eventDiv);
+            }
+            
+            if (dayEvents.length > maxEventsToShow) {
+              var moreDiv = document.createElement('div');
+              moreDiv.className = 'month-more';
+              moreDiv.textContent = '+ ' + (dayEvents.length - maxEventsToShow) + ' weitere';
+              eventsContainer.appendChild(moreDiv);
+            }
+            
+            dayDiv.appendChild(eventsContainer);
+          } else {
+            // Show tooltip for week view
+            dayDiv.className += ' has-events';
+            
+            var tooltip = document.createElement('div');
+            tooltip.className = 'event-tooltip';
+            
+            var maxEvents = Math.min(dayEvents.length, 5);
+            for (var e = 0; e < maxEvents; e++) {
+              var evt = dayEvents[e];
+              var eventItem = document.createElement('div');
+              eventItem.className = 'event-item';
+              
+              var timeSpan = document.createElement('div');
+              timeSpan.className = 'event-time';
+              timeSpan.textContent = formatTime(evt.start);
+              if (evt.end) timeSpan.textContent += ' - ' + formatTime(evt.end);
+              
+              var titleSpan = document.createElement('div');
+              titleSpan.className = 'event-title';
+              titleSpan.textContent = evt.title || 'Ohne Titel';
+              
+              eventItem.appendChild(timeSpan);
+              eventItem.appendChild(titleSpan);
+              tooltip.appendChild(eventItem);
+            }
+            
+            if (dayEvents.length > maxEvents) {
+              var moreDiv = document.createElement('div');
+              moreDiv.className = 'event-item';
+              moreDiv.textContent = '+ ' + (dayEvents.length - maxEvents) + ' weitere';
+              tooltip.appendChild(moreDiv);
+            }
+            
+            dayDiv.appendChild(tooltip);
+          }
+        }
+        
+        return dayDiv;
+      }
+
+      function getWeekStart(date){
+        var d = new Date(date);
+        var day = d.getDay();
+        var diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday
+        return new Date(d.setDate(diff));
+      }
+
+      function getWeekNumber(date){
+        var d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        var dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+      }
+
+      document.getElementById('viewSelector').addEventListener('change', function(e){
+        currentView = e.target.value;
+        renderCalendar();
+      });
+
+      document.getElementById('prevBtn').addEventListener('click', function(){
+        if (currentView === 'month') {
+          currentDate.setMonth(currentDate.getMonth() - 1);
+        } else {
+          currentDate.setDate(currentDate.getDate() - 7);
+        }
+        renderCalendar();
+      });
+
+      document.getElementById('nextBtn').addEventListener('click', function(){
+        if (currentView === 'month') {
+          currentDate.setMonth(currentDate.getMonth() + 1);
+        } else {
+          currentDate.setDate(currentDate.getDate() + 7);
+        }
+        renderCalendar();
+      });
+
+      document.getElementById('todayBtn').addEventListener('click', function(){
+        currentDate = new Date();
+        renderCalendar();
+      });
+
+      document.getElementById('icsFile').addEventListener('change', function(e){
+        var files = e.target.files;
+        if (!files || files.length === 0) return;
+        
+        document.getElementById('icsStatus').textContent = 'Lade ' + files.length + ' Datei(en)...';
+        
+        var allEvents = [];
+        var loadedCount = 0;
+        var totalFiles = files.length;
+        
+        for (var i = 0; i < files.length; i++) {
+          (function(file){
+            var reader = new FileReader();
+            reader.onload = function(evt){
+              setTimeout(function(){
+                try {
+                  var events = parseICS(evt.target.result);
+                  allEvents = allEvents.concat(events);
+                  loadedCount++;
+                  
+                  if (loadedCount === totalFiles) {
+                    loadEvents(allEvents);
+                    document.getElementById('icsStatus').textContent = allEvents.length + ' Termine aus ' + totalFiles + ' Datei(en) geladen';
+                  }
+                } catch (err) {
+                  console.error('ICS parsing error:', err);
+                  loadedCount++;
+                  if (loadedCount === totalFiles) {
+                    loadEvents(allEvents);
+                    document.getElementById('icsStatus').textContent = allEvents.length + ' Termine geladen (einige Fehler)';
+                  }
+                }
+              }, 50);
+            };
+            reader.onerror = function(){
+              loadedCount++;
+              if (loadedCount === totalFiles) {
+                loadEvents(allEvents);
+                document.getElementById('icsStatus').textContent = 'Fehler beim Lesen einiger Dateien';
+              }
+            };
+            reader.readAsText(file, 'UTF-8');
+          })(files[i]);
+        }
+      });
+
+      renderCalendar();
+      
+      // Auto-load ICS files from /calendars folder
+      loadCalendarsFromFolder();
+      
+      window.addEventListener('resize', function(){ setTimeout(renderCalendar, 100); });
+      window.addEventListener('orientationchange', function(){ setTimeout(renderCalendar, 250); });
     })();
   </script>
 </body>
 </html>
+
