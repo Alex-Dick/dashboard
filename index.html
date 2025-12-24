@@ -5,99 +5,94 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Dashboard</title>
+  <title>Smart Home Dashboard</title>
   <style>
+    /* Grund-Setup für Transparenz und Fullscreen */
     html, body { 
       height: 100%; margin: 0; padding: 0; 
       font-family: -apple-system, sans-serif; 
       background-color: transparent !important; 
-      color: #fff; 
-      overflow: hidden; 
+      color: #fff; overflow: hidden; 
     }
 
-    .bg-fixed {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      z-index: -10;
-      object-fit: cover;
-    }
+    /* Hintergrundbild und Abdunkelung */
+    .bg-fixed { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -10; object-fit: cover; }
+    .bg-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.2); z-index: -5; }
 
-    .bg-overlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.25);
-      z-index: -5;
-    }
-
+    /* Haupt-Container: Zentriert den Inhalt vertikal */
     .wrap { 
-      position: relative; 
-      z-index: 1;
-      width: 100%; height: 100vh; 
-      box-sizing: border-box; 
-      padding: 15px; /* Abstand zum Rand */
+      position: relative; z-index: 1; width: 100%; height: 100vh; box-sizing: border-box; padding: 30px;
+      display: -webkit-box; 
+      -webkit-box-orient: horizontal; 
+      -webkit-box-align: center; /* Vertikale Zentrierung */
+      -webkit-box-pack: justify; /* Abstand zwischen den Panels */
     }
 
-    /* KORREKTUR: Höhe auf 100% minus Padding für sichtbare Rundungen */
+    /* Linkes Panel (Uhr) */
     .left { 
-      float: left; width: 28%; 
-      height: 94%; /* Etwas Luft nach unten */
-      box-sizing: border-box; 
+      width: 35%; 
+      height: auto; /* Höhe wird durch den Kalender rechts bestimmt */
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-box-align: stretch;
     }
-    
+
+    /* Rechtes Panel (Kalender) */
     .right { 
-      float: right; width: 70%; 
-      height: 94%; /* Gleiche Höhe wie links */
-      box-sizing: border-box; 
+      width: 62%; 
+      height: auto; 
       background: rgba(15, 23, 42, 0.45); 
-      border-radius: 20px; 
+      border-radius: 25px; 
       border: 1px solid rgba(255,255,255,0.2); 
       overflow: hidden; 
     }
 
+    /* Gemeinsames Panel-Design */
     .panel { 
       background: rgba(15, 23, 42, 0.45); 
-      border-radius: 20px; 
-      height: 100%;
+      border-radius: 25px; 
+      height: 100%; 
       text-align: center; 
       border: 1px solid rgba(255,255,255,0.2); 
       display: -webkit-box; 
       -webkit-box-orient: vertical; 
-      -webkit-box-pack: center;
+      -webkit-box-pack: center; /* Zentriert Uhrzeit im Panel */
       box-sizing: border-box; 
-      padding: 20px;
+      padding: 30px;
     }
 
-    .time { font-size: 8vw; font-weight: bold; line-height: 1.1; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
-    .date-line { font-size: 1.8rem; margin-bottom: 10px; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
+    /* Uhrzeit & Datum */
+    .time { font-size: 8.5vw; font-weight: bold; line-height: 1.1; text-shadow: 0 2px 12px rgba(0,0,0,0.8); }
+    .date-line { font-size: 2rem; margin-bottom: 10px; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
 
-    .calendar-header { padding: 12px; background: rgba(255,255,255,0.1); overflow: hidden; }
+    /* Kalender Header */
+    .calendar-header { padding: 15px 20px; background: rgba(255,255,255,0.1); overflow: hidden; }
     .nav-group-left { float: left; }
     .nav-group-right { float: right; }
-    .header-center { text-align: center; font-weight: bold; font-size: 1.4rem; margin-top: 5px; }
+    .header-center { text-align: center; font-weight: bold; font-size: 1.6rem; margin-top: 5px; }
     
     .icon-btn { 
       background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); 
-      color: white; padding: 10px 15px; border-radius: 10px; font-size: 1.2rem; margin: 0 3px; 
+      color: white; padding: 10px 18px; border-radius: 12px; font-size: 1.2rem; margin: 0 4px; 
     }
     .icon-btn.active { background: #3b82f6; border-color: #60a5fa; }
 
-    .calendar-grid { 
-      clear: both; padding: 10px; 
-      height: 82%; /* Begrenzt das Grid innerhalb des Panels */
-      overflow-y: scroll; 
-      -webkit-overflow-scrolling: touch; 
-    }
-    
+    /* Kalender Grid: Automatische Höhe */
+    .calendar-grid { clear: both; padding: 15px; height: auto; overflow: hidden; }
     .calendar-day-header, .week-number, .calendar-day { float: left; width: 12.5%; box-sizing: border-box; }
-    .calendar-day-header { font-size: 0.8rem; text-align: center; opacity: 0.8; padding-bottom: 8px; font-weight: bold; }
-    .week-number { color: rgba(255,255,255,0.5); font-size: 0.8rem; text-align: center; padding-top: 20px; font-weight: bold; }
+    .calendar-day-header { font-size: 0.9rem; text-align: center; opacity: 0.9; padding-bottom: 12px; font-weight: bold; }
+    .week-number { color: rgba(255,255,255,0.4); font-size: 0.8rem; text-align: center; padding-top: 25px; font-weight: bold; }
     
-    .calendar-day { height: 90px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.08); overflow: hidden; }
-    .day-number { padding: 5px; font-size: 1rem; font-weight: bold; }
+    /* Tag-Zellen */
+    .calendar-day { height: 90px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); overflow: hidden; }
+    .day-number { padding: 8px; font-size: 1.1rem; font-weight: bold; }
     .today { background: rgba(59, 130, 246, 0.4) !important; border: 1px solid rgba(59, 130, 246, 0.7); }
-    .month-event { background: rgba(251, 146, 60, 0.9); font-size: 0.65rem; padding: 3px 5px; margin: 2px; border-radius: 4px; white-space: nowrap; overflow: hidden; }
+    
+    /* Termine */
+    .month-event { 
+      background: rgba(251, 146, 60, 0.9); font-size: 0.65rem; padding: 3px 6px; 
+      margin: 2px; border-radius: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+    }
 
     .clearfix::after { content: ""; display: table; clear: both; }
   </style>
@@ -128,6 +123,7 @@
         </div>
         <div id="calendarMonth" class="header-center">-</div>
       </div>
+      
       <div id="calendarGrid" class="calendar-grid clearfix">
         <div class="calendar-day-header">KW</div>
         <div class="calendar-day-header">Mo</div><div class="calendar-day-header">Di</div><div class="calendar-day-header">Mi</div>
@@ -138,35 +134,44 @@
   </div>
 
   <script>
-    /* ... (JavaScript bleibt identisch wie im vorherigen Schritt) ... */
     (function(){
       var calendarEvents = {}, viewDate = new Date(), currentView = 'month';
+
       function updateClock(){
         var now = new Date(), days = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
         document.getElementById('hoursMinutes').textContent = (now.getHours()<10?'0':'')+now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes();
         document.getElementById('dateLine').textContent = days[now.getDay()] + ', ' + now.getDate() + '.' + (now.getMonth() + 1) + '.';
       }
       setInterval(updateClock, 1000); updateClock();
+
       function getWeekNumber(d) {
         var date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
         date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay()||7));
         return Math.ceil((((date - new Date(Date.UTC(date.getUTCFullYear(),0,1))) / 86400000) + 1)/7);
       }
+
       function renderCalendar(){
         var y = viewDate.getFullYear(), m = viewDate.getMonth(), today = new Date();
         var months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
         var container = document.getElementById('calendarDays'), grid = document.getElementById('calendarGrid');
         container.innerHTML = '';
+
         if(currentView === 'month') {
           grid.className = 'calendar-grid clearfix';
           document.getElementById('calendarMonth').textContent = months[m] + ' ' + y;
           var first = new Date(y, m, 1).getDay(); first = (first === 0) ? 6 : first - 1;
           var last = new Date(y, m + 1, 0).getDate();
-          var kwDiv = document.createElement('div'); kwDiv.className = 'week-number'; kwDiv.textContent = getWeekNumber(new Date(y, m, 1)); container.appendChild(kwDiv);
-          for (var i=0; i<first; i++) { var e = document.createElement('div'); e.className = 'calendar-day'; e.style.opacity='0'; container.appendChild(e); }
+          
+          var kwDiv = document.createElement('div'); kwDiv.className = 'week-number'; 
+          kwDiv.textContent = getWeekNumber(new Date(y, m, 1)); container.appendChild(kwDiv);
+
+          for (var i=0; i<first; i++) { 
+            var e = document.createElement('div'); e.className = 'calendar-day'; e.style.opacity='0'; container.appendChild(e); 
+          }
           for (var d=1; d<=last; d++) {
             if (new Date(y, m, d).getDay() === 1 && d > 1) {
-              var nkw = document.createElement('div'); nkw.className = 'week-number'; nkw.textContent = getWeekNumber(new Date(y, m, d)); container.appendChild(nkw);
+              var nkw = document.createElement('div'); nkw.className = 'week-number'; 
+              nkw.textContent = getWeekNumber(new Date(y, m, d)); container.appendChild(nkw);
             }
             addDay(y, m, d, container, today);
           }
@@ -175,9 +180,13 @@
           var start = new Date(viewDate); var day = start.getDay();
           start.setDate(start.getDate() - (day === 0 ? 6 : day - 1));
           document.getElementById('calendarMonth').textContent = "KW " + getWeekNumber(start);
-          for(var j=0; j<7; j++) { var d2 = new Date(start); d2.setDate(start.getDate()+j); addDay(d2.getFullYear(), d2.getMonth(), d2.getDate(), container, today); }
+          for(var j=0; j<7; j++) { 
+            var d2 = new Date(start); d2.setDate(start.getDate()+j); 
+            addDay(d2.getFullYear(), d2.getMonth(), d2.getDate(), container, today); 
+          }
         }
       }
+
       function addDay(y, m, d, container, today) {
         var div = document.createElement('div'); div.className = 'calendar-day';
         if(d===today.getDate() && m===today.getMonth() && y===today.getFullYear()) div.className += ' today';
@@ -190,6 +199,7 @@
         }
         container.appendChild(div);
       }
+
       function loadCal() {
         ['basic.ics', 'calendar2.ics', 'feiertage-deutschland.ics'].forEach(function(f) {
           var x = new XMLHttpRequest(); x.open('GET', 'calendars/' + f, true);
@@ -200,13 +210,17 @@
                 if(lines[i].indexOf('BEGIN:VEVENT')===0) {
                   var ev = {}, j = i;
                   while(lines[j] && lines[j].indexOf('END:VEVENT')!==0){
-                    if(lines[j].indexOf('DTSTART')===0){ var v = lines[j].split(':')[1]; if(v) ev.d = new Date(v.substring(0,4), parseInt(v.substring(4,6))-1, parseInt(v.substring(6,8))); }
+                    if(lines[j].indexOf('DTSTART')===0){ 
+                      var v = lines[j].split(':')[1]; 
+                      if(v) ev.d = new Date(v.substring(0,4), parseInt(v.substring(4,6))-1, parseInt(v.substring(6,8))); 
+                    }
                     if(lines[j].indexOf('SUMMARY')===0) ev.t = lines[j].split(':')[1].replace(/\\/g, "").trim();
                     j++;
                   }
                   if(ev.d){
                     var k = ev.d.getFullYear()+'-'+ev.d.getMonth()+'-'+ev.d.getDate();
-                    if(!calendarEvents[k]) calendarEvents[k]=[]; calendarEvents[k].push({title: ev.t || "Termin"});
+                    if(!calendarEvents[k]) calendarEvents[k]=[]; 
+                    calendarEvents[k].push({title: ev.t || "Termin"});
                   }
                   i = j;
                 }
@@ -217,11 +231,14 @@
           x.send();
         });
       }
+
+      // Event Listener für Buttons
       document.getElementById('prevBtn').onclick = function(){ if(currentView==='month') viewDate.setMonth(viewDate.getMonth()-1); else viewDate.setDate(viewDate.getDate()-7); renderCalendar(); };
       document.getElementById('nextBtn').onclick = function(){ if(currentView==='month') viewDate.setMonth(viewDate.getMonth()+1); else viewDate.setDate(viewDate.getDate()+7); renderCalendar(); };
       document.getElementById('todayBtn').onclick = function(){ viewDate = new Date(); renderCalendar(); };
       document.getElementById('viewMonth').onclick = function(){ currentView = 'month'; this.className = 'icon-btn active'; document.getElementById('viewWeek').className = 'icon-btn'; renderCalendar(); };
       document.getElementById('viewWeek').onclick = function(){ currentView = 'week'; this.className = 'icon-btn active'; document.getElementById('viewMonth').className = 'icon-btn'; renderCalendar(); };
+      
       renderCalendar(); loadCal();
     })();
   </script>
