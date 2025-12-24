@@ -7,65 +7,63 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Smart Home Dashboard</title>
   <style>
-    /* Grund-Setup für Transparenz und Fullscreen */
     html, body { 
       height: 100%; margin: 0; padding: 0; 
       font-family: -apple-system, sans-serif; 
-      background-color: transparent !important; 
+      background-color: #000 !important; 
       color: #fff; overflow: hidden; 
     }
 
-    /* Hintergrundbild und Abdunkelung */
     .bg-fixed { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -10; object-fit: cover; }
     .bg-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.2); z-index: -5; }
 
-    /* Haupt-Container: Zentriert den Inhalt vertikal */
+    /* wrap: Erhält display: flex, um die Kinder-Höhen zu synchronisieren */
     .wrap { 
       position: relative; z-index: 1; width: 100%; height: 100vh; box-sizing: border-box; padding: 30px;
       display: -webkit-box; 
-      -webkit-box-orient: horizontal; 
-      -webkit-box-align: center; /* Vertikale Zentrierung */
-      -webkit-box-pack: justify; /* Abstand zwischen den Panels */
+      display: flex;
+      -webkit-box-orient: horizontal;
+      flex-direction: row;
+      align-items: stretch; /* DIES erzwingt die gleiche Höhe */
+      -webkit-box-pack: justify;
+      justify-content: space-between;
     }
 
-    /* Linkes Panel (Uhr) */
+    /* Linke Spalte: Muss flex-Anweisungen haben, um die Höhe an .panel weiterzugeben */
     .left { 
       width: 35%; 
-      height: auto; /* Höhe wird durch den Kalender rechts bestimmt */
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-box-align: stretch;
+      display: flex;
+      flex-direction: column;
     }
 
-    /* Rechtes Panel (Kalender) */
     .right { 
       width: 62%; 
-      height: auto; 
       background: rgba(15, 23, 42, 0.45); 
       border-radius: 25px; 
       border: 1px solid rgba(255,255,255,0.2); 
       overflow: hidden; 
+      display: flex;
+      flex-direction: column;
     }
 
-    /* Gemeinsames Panel-Design */
+    /* Das eigentliche Uhr-Panel: Bekommt flex: 1, um die komplette Höhe von .left zu füllen */
     .panel { 
       background: rgba(15, 23, 42, 0.45); 
       border-radius: 25px; 
-      height: 100%; 
-      text-align: center; 
       border: 1px solid rgba(255,255,255,0.2); 
-      display: -webkit-box; 
-      -webkit-box-orient: vertical; 
-      -webkit-box-pack: center; /* Zentriert Uhrzeit im Panel */
+      flex: 1; 
+      display: flex;
+      flex-direction: column;
+      justify-content: center; /* Zentriert die Uhrzeit vertikal */
+      align-items: center;
+      text-align: center; 
       box-sizing: border-box; 
       padding: 30px;
     }
 
-    /* Uhrzeit & Datum */
     .time { font-size: 8.5vw; font-weight: bold; line-height: 1.1; text-shadow: 0 2px 12px rgba(0,0,0,0.8); }
     .date-line { font-size: 2rem; margin-bottom: 10px; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
 
-    /* Kalender Header */
     .calendar-header { padding: 15px 20px; background: rgba(255,255,255,0.1); overflow: hidden; }
     .nav-group-left { float: left; }
     .nav-group-right { float: right; }
@@ -77,18 +75,15 @@
     }
     .icon-btn.active { background: #3b82f6; border-color: #60a5fa; }
 
-    /* Kalender Grid: Automatische Höhe */
-    .calendar-grid { clear: both; padding: 15px; height: auto; overflow: hidden; }
+    .calendar-grid { clear: both; padding: 15px; flex-grow: 1; overflow: hidden; }
     .calendar-day-header, .week-number, .calendar-day { float: left; width: 12.5%; box-sizing: border-box; }
     .calendar-day-header { font-size: 0.9rem; text-align: center; opacity: 0.9; padding-bottom: 12px; font-weight: bold; }
     .week-number { color: rgba(255,255,255,0.4); font-size: 0.8rem; text-align: center; padding-top: 25px; font-weight: bold; }
     
-    /* Tag-Zellen */
     .calendar-day { height: 90px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); overflow: hidden; }
     .day-number { padding: 8px; font-size: 1.1rem; font-weight: bold; }
     .today { background: rgba(59, 130, 246, 0.4) !important; border: 1px solid rgba(59, 130, 246, 0.7); }
     
-    /* Termine */
     .month-event { 
       background: rgba(251, 146, 60, 0.9); font-size: 0.65rem; padding: 3px 6px; 
       margin: 2px; border-radius: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
@@ -102,7 +97,7 @@
   <img src="Winter_1.jpg" class="bg-fixed" alt="" />
   <div class="bg-overlay"></div>
 
-  <div class="wrap clearfix">
+  <div class="wrap">
     <div class="left">
       <div class="panel">
         <div id="dateLine" class="date-line">-</div>
@@ -111,7 +106,7 @@
     </div>
     
     <div class="right">
-      <div class="calendar-header">
+      <div class="calendar-header clearfix">
         <div class="nav-group-left">
           <button class="icon-btn" id="prevBtn">&#10094;</button>
           <button class="icon-btn" id="nextBtn">&#10095;</button>
@@ -207,14 +202,14 @@
             if (x.readyState === 4 && x.status === 200) {
               var lines = x.responseText.split('\n');
               for(var i=0; i<lines.length; i++) {
-                if(lines[i].indexOf('BEGIN:VEVENT')===0) {
+                if(lines[i].indexOf('BEGIN:VEVENT')!==-1) {
                   var ev = {}, j = i;
-                  while(lines[j] && lines[j].indexOf('END:VEVENT')!==0){
-                    if(lines[j].indexOf('DTSTART')===0){ 
+                  while(lines[j] && lines[j].indexOf('END:VEVENT')===-1){
+                    if(lines[j].indexOf('DTSTART')!==-1){ 
                       var v = lines[j].split(':')[1]; 
                       if(v) ev.d = new Date(v.substring(0,4), parseInt(v.substring(4,6))-1, parseInt(v.substring(6,8))); 
                     }
-                    if(lines[j].indexOf('SUMMARY')===0) ev.t = lines[j].split(':')[1].replace(/\\/g, "").trim();
+                    if(lines[j].indexOf('SUMMARY')!==-1) ev.t = lines[j].split(':')[1].replace(/\\/g, "").trim();
                     j++;
                   }
                   if(ev.d){
@@ -232,7 +227,6 @@
         });
       }
 
-      // Event Listener für Buttons
       document.getElementById('prevBtn').onclick = function(){ if(currentView==='month') viewDate.setMonth(viewDate.getMonth()-1); else viewDate.setDate(viewDate.getDate()-7); renderCalendar(); };
       document.getElementById('nextBtn').onclick = function(){ if(currentView==='month') viewDate.setMonth(viewDate.getMonth()+1); else viewDate.setDate(viewDate.getDate()+7); renderCalendar(); };
       document.getElementById('todayBtn').onclick = function(){ viewDate = new Date(); renderCalendar(); };
