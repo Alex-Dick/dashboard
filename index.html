@@ -7,19 +7,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Smart Home Dashboard</title>
   <style>
-    /* Grund-Setup: Transparent für stabilen Hintergrund im Web-App-Modus */
     html, body { 
       height: 100%; margin: 0; padding: 0; 
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+      font-family: -apple-system, sans-serif; 
       background-color: transparent !important; 
       color: #fff; overflow: hidden; 
     }
 
-    /* Hintergrundbild */
     .bg-fixed { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -10; object-fit: cover; }
     .bg-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.2); z-index: -5; }
 
-    /* Haupt-Container */
     .wrap { 
       position: relative; z-index: 1; width: 100%; height: 100vh; box-sizing: border-box; padding: 25px;
       display: -webkit-box; 
@@ -28,11 +25,8 @@
       -webkit-box-pack: justify; 
     }
 
-    /* FIXIERTE GRÖSSE FÜR BEIDE PANELS (Optimiert für iPad Vollbild) */
-    .left, .right { 
-      height: 620px; 
-    }
-
+    /* FIXIERTE GRÖSSE */
+    .left, .right { height: 620px; }
     .left { width: 34%; }
     .right { 
       width: 63%; 
@@ -40,10 +34,8 @@
       border-radius: 25px; 
       border: 1px solid rgba(255,255,255,0.2); 
       overflow: hidden; 
-      position: relative;
     }
 
-    /* Design des Uhr-Panels */
     .panel { 
       background: rgba(15, 23, 42, 0.45); 
       border-radius: 25px; 
@@ -60,32 +52,35 @@
     .time { font-size: 8.5vw; font-weight: bold; line-height: 1.1; text-shadow: 0 2px 12px rgba(0,0,0,0.8); }
     .date-line { font-size: 2rem; margin-bottom: 10px; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
 
-    /* Kalender Header & Buttons */
+    /* NEUER ZENTRIERTER HEADER */
     .calendar-header { 
-      padding: 0 15px; 
+      padding: 10px 15px; 
       background: rgba(255,255,255,0.1); 
-      height: 60px; 
+      height: 65px; 
       display: -webkit-box;
       -webkit-box-orient: horizontal;
       -webkit-box-align: center;
-      -webkit-box-pack: justify;
-      position: relative;
+      box-sizing: border-box;
     }
 
-    .nav-group-left, .nav-group-right { display: -webkit-box; -webkit-box-align: center; }
-
+    .nav-group-left { width: 180px; display: -webkit-box; }
+    .nav-group-right { width: 120px; display: -webkit-box; -webkit-box-pack: end; }
+    
     .header-center { 
-      position: absolute; left: 50%; -webkit-transform: translateX(-50%); 
-      font-weight: bold; font-size: 1.5rem; 
+      -webkit-box-flex: 1; /* Nimmt den mittleren Platz ein */
+      text-align: center; 
+      font-weight: bold; 
+      font-size: 1.6rem; 
+      white-space: nowrap;
     }
     
     .icon-btn { 
       background: rgba(255,255,255,0.2); 
       border: 1px solid rgba(255,255,255,0.3); 
       color: white; 
-      width: 55px; /* Feste Breite */
-      height: 42px; /* Feste Höhe für alle Buttons */
-      line-height: 40px; 
+      width: 50px; 
+      height: 45px; 
+      line-height: 43px; 
       border-radius: 10px; 
       font-size: 1.2rem; 
       margin: 0 3px; 
@@ -94,13 +89,11 @@
     }
     .icon-btn.active { background: #3b82f6; border-color: #60a5fa; }
 
-    /* Kalender Grid */
     .calendar-grid { clear: both; padding: 12px; overflow: hidden; }
     .calendar-day-header, .week-number, .calendar-day { float: left; width: 12.5%; box-sizing: border-box; }
     .calendar-day-header { font-size: 0.9rem; text-align: center; opacity: 0.9; padding-bottom: 10px; font-weight: bold; }
     .week-number { color: rgba(255,255,255,0.4); font-size: 0.8rem; text-align: center; padding-top: 25px; font-weight: bold; }
     
-    /* Tag-Zellen (Höhe angepasst an Panel-Fixmaß) */
     .calendar-day { height: 86px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); overflow: hidden; }
     .day-number { padding: 6px 8px; font-size: 1.1rem; font-weight: bold; }
     .today { background: rgba(59, 130, 246, 0.4) !important; border: 1px solid rgba(59, 130, 246, 0.7); }
@@ -111,9 +104,6 @@
     }
 
     .clearfix::after { content: ""; display: table; clear: both; }
-
-    /* Spacer für das linke Panel zur Stabilität */
-    .spacer { height: 0; visibility: hidden; font-size: 1px; }
   </style>
 </head>
 <body>
@@ -126,7 +116,6 @@
       <div class="panel">
         <div id="dateLine" class="date-line">-</div>
         <div id="hoursMinutes" class="time">00:00</div>
-        <div class="spacer">. . . . . . . . . . . . . . .</div>
       </div>
     </div>
     
@@ -137,7 +126,9 @@
           <button class="icon-btn" id="nextBtn">&#10095;</button>
           <button class="icon-btn" id="todayBtn">&#8634;</button>
         </div>
+        
         <div id="calendarMonth" class="header-center">-</div>
+        
         <div class="nav-group-right">
           <button class="icon-btn active" id="viewMonth">田</button>
           <button class="icon-btn" id="viewWeek">◷</button>
