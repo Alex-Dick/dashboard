@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Uhr + Kalender Navigation Fix</title>
+  <title>Uhr + Kalender Auto-Load Fix</title>
   <style>
     :root {
       --bg-url: url('./Winter_1.jpg');
@@ -25,51 +25,21 @@
     .time { font-size: 8vw; font-weight: bold; }
     .date-line { font-size: 1.8rem; opacity: 0.9; margin-bottom: 5px; }
 
-    /* NAVIGATION STYLE */
-    .calendar-header { 
-        padding: 10px; 
-        background: rgba(255,255,255,0.08); 
-        display: -webkit-box; display: flex; 
-        -webkit-box-pack: justify; justify-content: space-between; 
-        -webkit-box-align: center; align-items: center; 
-    }
+    .calendar-header { padding: 10px; background: rgba(255,255,255,0.08); display: -webkit-box; display: flex; -webkit-box-pack: justify; justify-content: space-between; -webkit-box-align: center; align-items: center; }
     .header-center { font-weight: bold; font-size: 1.2rem; }
     
-    .nav-btn { 
-        background: rgba(255,255,255,0.15); 
-        border: 1px solid rgba(255,255,255,0.2); 
-        color: white; 
-        padding: 8px 15px; 
-        border-radius: 6px; 
-        cursor: pointer; 
-        font-size: 1rem;
-    }
-    .nav-btn:active { background: rgba(255,255,255,0.3); }
+    .nav-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 1rem; }
 
-    /* KALENDER SCROLLING */
-    .calendar-grid { 
-        display: block; 
-        -webkit-box-flex: 1; flex: 1; 
-        overflow-y: scroll; 
-        -webkit-overflow-scrolling: touch; 
-        padding: 5px;
-    }
-
+    .calendar-grid { display: block; -webkit-box-flex: 1; flex: 1; overflow-y: scroll; -webkit-overflow-scrolling: touch; padding: 5px; }
     .calendar-day-header, .week-number, .calendar-day { float: left; width: 12.5%; box-sizing: border-box; }
     .calendar-day-header { font-size: 0.75rem; text-align: center; opacity: 0.5; padding: 5px 0; }
     .week-number { color: rgba(255,255,255,0.3); font-size: 0.7rem; text-align: center; padding-top: 10px; }
     
-    .calendar-day { 
-        height: 90px; 
-        border: 1px solid rgba(255,255,255,0.05); 
-        background: rgba(255,255,255,0.02); 
-        overflow: hidden;
-    }
+    .calendar-day { height: 90px; border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.02); overflow: hidden; }
     .day-number { padding: 4px; font-size: 0.85rem; font-weight: bold; }
     .today { background: rgba(59, 130, 246, 0.2) !important; border: 1px solid rgba(59, 130, 246, 0.5); }
 
     .calendar-grid::after, #calendarDays::after { content: ""; display: table; clear: both; }
-
     .month-event { background: #fb923c; color: white; font-size: 0.65rem; padding: 2px 4px; margin: 2px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     @media (orientation: portrait) { .wrap { -webkit-box-orient: vertical; flex-direction: column; } }
@@ -86,9 +56,9 @@
         <div id="hoursMinutes" class="time">00:00</div>
       </div>
       <div class="panel">
-        <button class="nav-btn" onclick="document.getElementById('icsFile').click()" style="width:100%">Termine laden (.ics)</button>
+        <button class="nav-btn" onclick="document.getElementById('icsFile').click()" style="width:100%">ICS manuell laden</button>
         <input type="file" id="icsFile" accept=".ics" multiple style="display:none" />
-        <div id="icsStatus" style="margin-top:10px; font-size:0.75rem; opacity:0.6;">Keine Daten</div>
+        <div id="icsStatus" style="margin-top:10px; font-size:0.75rem; opacity:0.6;">Suche Kalender...</div>
         <button class="nav-btn" id="todayBtn" style="margin-top:10px; width:100%">Heute</button>
       </div>
     </div>
@@ -96,15 +66,13 @@
     <div class="right">
       <div class="calendar-header">
         <button class="nav-btn" id="prevBtn"> Zurück </button>
-        <div id="calendarMonth" class="header-center">Monat Jahr</div>
+        <div id="calendarMonth" class="header-center">-</div>
         <button class="nav-btn" id="nextBtn"> Vor </button>
       </div>
       <div class="calendar-grid">
         <div class="calendar-day-header">KW</div>
-        <div class="calendar-day-header">Mo</div><div class="calendar-day-header">Di</div>
-        <div class="calendar-day-header">Mi</div><div class="calendar-day-header">Do</div>
-        <div class="calendar-day-header">Fr</div><div class="calendar-day-header">Sa</div>
-        <div class="calendar-day-header">So</div>
+        <div class="calendar-day-header">Mo</div><div class="calendar-day-header">Di</div><div class="calendar-day-header">Mi</div>
+        <div class="calendar-day-header">Do</div><div class="calendar-day-header">Fr</div><div class="calendar-day-header">Sa</div><div class="calendar-day-header">So</div>
         <div id="calendarDays"></div>
       </div>
     </div>
@@ -135,38 +103,27 @@
         var today = new Date();
         var months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
         document.getElementById('calendarMonth').textContent = months[m] + ' ' + y;
-        
         var container = document.getElementById('calendarDays');
         container.innerHTML = '';
-        
         var firstDayIdx = new Date(y, m, 1).getDay();
         firstDayIdx = (firstDayIdx === 0) ? 6 : firstDayIdx - 1;
         var totalDays = new Date(y, m + 1, 0).getDate();
 
-        // Erste KW
-        var kw = document.createElement('div');
-        kw.className = 'week-number';
-        kw.textContent = getWeekNumber(new Date(y, m, 1));
-        container.appendChild(kw);
+        var kw = document.createElement('div'); kw.className = 'week-number';
+        kw.textContent = getWeekNumber(new Date(y, m, 1)); container.appendChild(kw);
 
         for (var i=0; i<firstDayIdx; i++) {
-          var e = document.createElement('div'); e.className = 'calendar-day'; e.style.opacity='0';
-          container.appendChild(e);
+          var e = document.createElement('div'); e.className = 'calendar-day'; e.style.opacity='0'; container.appendChild(e);
         }
-
         for (var d=1; d<=totalDays; d++) {
           var curDate = new Date(y, m, d);
           if (curDate.getDay() === 1 && d > 1) {
             var nkw = document.createElement('div'); nkw.className = 'week-number';
             nkw.textContent = getWeekNumber(curDate); container.appendChild(nkw);
           }
-          
-          var dDiv = document.createElement('div');
-          dDiv.className = 'calendar-day';
+          var dDiv = document.createElement('div'); dDiv.className = 'calendar-day';
           if(d === today.getDate() && m === today.getMonth() && y === today.getFullYear()) dDiv.className += ' today';
-          
           dDiv.innerHTML = '<div class="day-number">'+d+'</div>';
-          
           var key = y+'-'+m+'-'+d;
           if (calendarEvents[key]) {
             calendarEvents[key].forEach(function(ev){
@@ -178,36 +135,63 @@
         }
       }
 
-      // ICS Simple Parser
+      function parseICS(content) {
+        var lines = content.split('\n');
+        var evs = []; var cur = null;
+        lines.forEach(function(l){
+          l = l.trim();
+          if(l.indexOf('BEGIN:VEVENT')===0) cur = {};
+          else if(l.indexOf('END:VEVENT')===0 && cur && cur.start) { evs.push(cur); cur=null; }
+          else if(cur && l.indexOf('DTSTART')===0) {
+            var v = l.split(':')[1];
+            if(v) cur.start = new Date(v.substring(0,4), v.substring(4,6)-1, v.substring(6,8));
+          }
+          else if(cur && l.indexOf('SUMMARY')===0) cur.title = l.split(':')[1];
+        });
+        return evs;
+      }
+
+      function loadCalendarsFromFolder() {
+        var files = ['basic.ics', 'calendar2.ics', 'feiertage-deutschland.ics'];
+        var loadedCount = 0;
+        var allFoundEvents = [];
+        files.forEach(function(f) {
+          var xhr = new XMLHttpRequest();
+          xhr.open('GET', 'calendars/' + f, true);
+          xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+              if (xhr.status === 200) {
+                var parsed = parseICS(xhr.responseText);
+                allFoundEvents = allFoundEvents.concat(parsed);
+              }
+              loadedCount++;
+              if (loadedCount === files.length) {
+                addEventsToCalendar(allFoundEvents);
+                document.getElementById('icsStatus').textContent = allFoundEvents.length + " Termine geladen";
+              }
+            }
+          };
+          xhr.send();
+        });
+      }
+
+      function addEventsToCalendar(evList) {
+        evList.forEach(function(ev) {
+          var k = ev.start.getFullYear()+'-'+ev.start.getMonth()+'-'+ev.start.getDate();
+          if(!calendarEvents[k]) calendarEvents[k]=[];
+          calendarEvents[k].push(ev);
+        });
+        renderCalendar();
+      }
+
       document.getElementById('icsFile').onchange = function(e){
-        var files = e.target.files;
-        var loaded = 0;
-        var allEv = [];
+        var files = e.target.files; var loaded = 0; var allEv = [];
         for(var i=0; i<files.length; i++){
           var r = new FileReader();
           r.onload = function(evt){
-            var lines = evt.target.result.split('\n');
-            var cur = null;
-            lines.forEach(function(l){
-              if(l.indexOf('BEGIN:VEVENT')===0) cur = {};
-              else if(l.indexOf('END:VEVENT')===0 && cur.start) { allEv.push(cur); cur=null; }
-              else if(cur && l.indexOf('DTSTART')===0) {
-                var val = l.split(':')[1];
-                cur.start = new Date(val.substring(0,4), val.substring(4,6)-1, val.substring(6,8));
-              }
-              else if(cur && l.indexOf('SUMMARY')===0) cur.title = l.split(':')[1];
-            });
+            allEv = allEv.concat(parseICS(evt.target.result));
             loaded++;
-            if(loaded === files.length) {
-              calendarEvents = {};
-              allEv.forEach(function(ev){
-                var k = ev.start.getFullYear()+'-'+ev.start.getMonth()+'-'+ev.start.getDate();
-                if(!calendarEvents[k]) calendarEvents[k]=[];
-                calendarEvents[k].push(ev);
-              });
-              document.getElementById('icsStatus').textContent = allEv.length + ' Termine geladen';
-              renderCalendar();
-            }
+            if(loaded === files.length) { addEventsToCalendar(allEv); }
           };
           r.readAsText(files[i]);
         }
@@ -218,6 +202,7 @@
       document.getElementById('todayBtn').onclick = function(){ viewDate = new Date(); renderCalendar(); };
       
       renderCalendar();
+      loadCalendarsFromFolder(); // Startet den Auto-Load
     })();
   </script>
 </body>
