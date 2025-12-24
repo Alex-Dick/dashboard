@@ -5,36 +5,46 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Smart Home Dashboard</title>
+  <title>Smart Home Dashboard Fixed</title>
   <style>
+    /* Grund-Setup wie in deiner stabilen Version */
     html, body { 
       height: 100%; margin: 0; padding: 0; 
       font-family: -apple-system, sans-serif; 
-      background-color: #000 !important; 
+      background-color: #000; 
       color: #fff; overflow: hidden; 
     }
 
-    .bg-fixed { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -10; object-fit: cover; }
-    .bg-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.2); z-index: -5; }
+    /* Hintergrundbild - Bleibt fixiert wie gewünscht */
+    .bg-fixed { 
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+      z-index: -10; object-fit: cover; 
+    }
+    .bg-overlay { 
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+      background: rgba(0, 0, 0, 0.2); z-index: -5; 
+    }
 
-    /* Modernes Flexbox-Layout für perfekte Höhen-Synchronisation */
+    /* Haupt-Container: Jetzt mit Flexbox für gleiche Höhe */
     .wrap { 
       position: relative; z-index: 1; width: 100%; height: 100vh; box-sizing: border-box; 
-      padding: 60px 30px 30px 30px; /* 60px oben für Batterie-Abstand */
+      padding: 60px 30px 30px 30px;
       display: flex; 
       flex-direction: row;
-      align-items: stretch; /* DIES sorgt für die exakt gleiche Höhe beider Spalten */
+      align-items: stretch; /* DIES macht beide Panels gleich hoch */
       justify-content: space-between;
     }
 
+    /* Linkes Panel Spalte */
     .left { 
       width: 35%; 
-      display: flex;
+      display: flex; /* Erlaubt dem Panel darin, die volle Höhe zu füllen */
     }
 
+    /* Rechtes Panel Spalte */
     .right { 
       width: 62%; 
-      background: rgba(15, 23, 42, 0.45); 
+      background: rgba(15, 23, 42, 0.5); 
       border-radius: 25px; 
       border: 1px solid rgba(255,255,255,0.2); 
       overflow: hidden;
@@ -42,50 +52,44 @@
       flex-direction: column;
     }
 
-    /* Das Uhr-Panel füllt nun den gesamten verfügbaren Platz der linken Spalte */
+    /* Uhr-Panel Design */
     .panel { 
-      background: rgba(15, 23, 42, 0.45); 
+      background: rgba(15, 23, 42, 0.5); 
       border-radius: 25px; 
-      width: 100%; /* Füllt die Breite von .left */
       border: 1px solid rgba(255,255,255,0.2); 
-      display: flex; 
+      width: 100%;
+      display: flex;
       flex-direction: column;
-      justify-content: center; /* Zentriert Uhrzeit vertikal im Panel */
+      justify-content: center; /* Zentriert Uhr/Datum vertikal */
       align-items: center;
       text-align: center; 
       box-sizing: border-box; 
       padding: 30px;
     }
 
+    /* Uhrzeit & Datum */
     .time { font-size: 8.5vw; font-weight: bold; line-height: 1.1; text-shadow: 0 2px 12px rgba(0,0,0,0.8); }
     .date-line { font-size: 2rem; margin-bottom: 10px; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
 
+    /* Kalender Styles */
     .calendar-header { padding: 15px 20px; background: rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
     .header-center { font-weight: bold; font-size: 1.6rem; }
+    .icon-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 10px 18px; border-radius: 12px; font-size: 1.2rem; margin: 0 4px; }
     
-    .icon-btn { 
-      background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); 
-      color: white; padding: 10px 18px; border-radius: 12px; font-size: 1.2rem; margin: 0 4px; 
-    }
-    .icon-btn.active { background: #3b82f6; border-color: #60a5fa; }
-
     .calendar-grid { padding: 15px; flex-grow: 1; display: grid; grid-template-columns: 40px repeat(7, 1fr); gap: 2px; }
     .calendar-day-header { font-size: 0.9rem; text-align: center; opacity: 0.9; padding-bottom: 12px; font-weight: bold; }
-    .week-number { color: rgba(255,255,255,0.4); font-size: 0.8rem; text-align: center; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+    .week-number { color: rgba(255,255,255,0.4); font-size: 0.8rem; text-align: center; display: flex; align-items: center; justify-content: center; }
     
     .calendar-day { min-height: 80px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); overflow: hidden; }
     .day-number { padding: 8px; font-size: 1.1rem; font-weight: bold; }
     .today { background: rgba(59, 130, 246, 0.4) !important; border: 1px solid rgba(59, 130, 246, 0.7); }
     
-    .month-event { 
-      background: rgba(251, 146, 60, 0.9); font-size: 0.65rem; padding: 3px 6px; 
-      margin: 2px; border-radius: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
-    }
+    .month-event { background: rgba(251, 146, 60, 0.9); font-size: 0.65rem; padding: 3px 6px; margin: 2px; border-radius: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   </style>
 </head>
 <body>
 
-  <img src="Winter_1.jpg" class="bg-fixed" alt="" />
+  <img src="Winter_1.jpg" class="bg-fixed">
   <div class="bg-overlay"></div>
 
   <div class="wrap">
@@ -104,23 +108,20 @@
           <button class="icon-btn" id="todayBtn">&#8634;</button>
         </div>
         <div id="calendarMonth" class="header-center">-</div>
-        <div>
-          <button class="icon-btn active" id="viewMonth">田</button>
-          <button class="icon-btn" id="viewWeek">◷</button>
-        </div>
-      </div>
+        <div style="width: 80px;"></div> </div>
       
       <div id="calendarGrid" class="calendar-grid">
         <div class="calendar-day-header">KW</div>
         <div class="calendar-day-header">Mo</div><div class="calendar-day-header">Di</div><div class="calendar-day-header">Mi</div>
         <div class="calendar-day-header">Do</div><div class="calendar-day-header">Fr</div><div class="calendar-day-header">Sa</div><div class="calendar-day-header">So</div>
-        </div>
+        <div id="calendarDays" style="display: contents;"></div>
+      </div>
     </div>
   </div>
 
   <script>
     (function(){
-      var calendarEvents = {}, viewDate = new Date(), currentView = 'month';
+      var calendarEvents = {}, viewDate = new Date();
 
       function updateClock(){
         var now = new Date(), days = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
@@ -138,41 +139,31 @@
       function renderCalendar(){
         var y = viewDate.getFullYear(), m = viewDate.getMonth(), today = new Date();
         var months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
-        var grid = document.getElementById('calendarGrid');
+        var container = document.getElementById('calendarDays');
+        container.innerHTML = '';
+        document.getElementById('calendarMonth').textContent = months[m] + ' ' + y;
+
+        var first = new Date(y, m, 1).getDay(); first = (first === 0) ? 6 : first - 1;
+        var last = new Date(y, m + 1, 0).getDate();
         
-        // Header KW, Mo, Di... beibehalten, Rest leeren
-        while(grid.children.length > 8) grid.removeChild(grid.lastChild);
+        container.appendChild(Object.assign(document.createElement('div'), {className:'week-number', textContent: getWeekNumber(new Date(y, m, 1))}));
 
-        if(currentView === 'month') {
-          document.getElementById('calendarMonth').textContent = months[m] + ' ' + y;
-          var first = new Date(y, m, 1).getDay(); first = (first === 0) ? 6 : first - 1;
-          var last = new Date(y, m + 1, 0).getDate();
-          
-          grid.appendChild(Object.assign(document.createElement('div'), {className:'week-number', textContent: getWeekNumber(new Date(y, m, 1))}));
-
-          for (var i=0; i<first; i++) { 
-            grid.appendChild(Object.assign(document.createElement('div'), {className:'calendar-day', style:'opacity:0'})); 
-          }
-          for (var d=1; d<=last; d++) {
-            if (new Date(y, m, d).getDay() === 1 && d > 1) {
-              grid.appendChild(Object.assign(document.createElement('div'), {className:'week-number', textContent: getWeekNumber(new Date(y, m, d))}));
-            }
-            addDay(y, m, d, grid, today);
-          }
+        for (var i=0; i<first; i++) { 
+          container.appendChild(Object.assign(document.createElement('div'), {className:'calendar-day', style:'opacity:0'})); 
         }
-      }
-
-      function addDay(y, m, d, container, today) {
-        var div = document.createElement('div'); div.className = 'calendar-day';
-        if(d===today.getDate() && m===today.getMonth() && y===today.getFullYear()) div.classList.add('today');
-        div.innerHTML = '<div class="day-number">' + d + '</div>';
-        var key = y+'-'+m+'-'+d;
-        if(calendarEvents[key]) {
-          calendarEvents[key].forEach(function(ev){
+        for (var d=1; d<=last; d++) {
+          if (new Date(y, m, d).getDay() === 1 && d > 1) {
+            container.appendChild(Object.assign(document.createElement('div'), {className:'week-number', textContent: getWeekNumber(new Date(y, m, d))}));
+          }
+          var div = document.createElement('div'); div.className = 'calendar-day';
+          if(d===today.getDate() && m===today.getMonth() && y===today.getFullYear()) div.classList.add('today');
+          div.innerHTML = '<div class="day-number">' + d + '</div>';
+          var key = y+'-'+m+'-'+d;
+          if(calendarEvents[key]) calendarEvents[key].forEach(function(ev){
             div.appendChild(Object.assign(document.createElement('div'), {className:'month-event', textContent: ev.title}));
           });
+          container.appendChild(div);
         }
-        container.appendChild(div);
       }
 
       function loadCal() {
@@ -182,20 +173,16 @@
             if (x.readyState === 4 && x.status === 200) {
               var lines = x.responseText.split('\n');
               for(var i=0; i<lines.length; i++) {
-                if(lines[i].indexOf('BEGIN:VEVENT')===0) {
+                if(lines[i].indexOf('BEGIN:VEVENT')!==-1) {
                   var ev = {}, j = i;
-                  while(lines[j] && lines[j].indexOf('END:VEVENT')!==0){
-                    if(lines[j].indexOf('DTSTART')===0){ 
-                      var v = lines[j].split(':')[1]; 
-                      if(v) ev.d = new Date(v.substring(0,4), parseInt(v.substring(4,6))-1, parseInt(v.substring(6,8))); 
-                    }
-                    if(lines[j].indexOf('SUMMARY')===0) ev.t = lines[j].split(':')[1].replace(/\\/g, "").trim();
+                  while(lines[j] && lines[j].indexOf('END:VEVENT')===-1){
+                    if(lines[j].indexOf('DTSTART')!==-1){ var v = lines[j].split(':')[1]; if(v) ev.d = new Date(v.substring(0,4), parseInt(v.substring(4,6))-1, parseInt(v.substring(6,8))); }
+                    if(lines[j].indexOf('SUMMARY')!==-1) ev.t = lines[j].split(':')[1].replace(/\\/g, "").trim();
                     j++;
                   }
                   if(ev.d){
                     var k = ev.d.getFullYear()+'-'+ev.d.getMonth()+'-'+ev.d.getDate();
-                    if(!calendarEvents[k]) calendarEvents[k]=[]; 
-                    calendarEvents[k].push({title: ev.t || "Termin"});
+                    if(!calendarEvents[k]) calendarEvents[k]=[]; calendarEvents[k].push({title: ev.t || "Termin"});
                   }
                   i = j;
                 }
