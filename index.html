@@ -7,31 +7,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Smart Home Dashboard</title>
   <style>
-    /* Grund-Setup für Transparenz und Fullscreen */
+    /* Grund-Setup */
     html, body { 
       height: 100%; margin: 0; padding: 0; 
       font-family: -apple-system, sans-serif; 
-      background-color: transparent !important; 
+      background-color: #000 !important; /* Schwarz als Basis, falls Bild lädt */
       color: #fff; overflow: hidden; 
     }
 
-    /* Hintergrundbild und Abdunkelung */
-    .bg-fixed { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -10; object-fit: cover; }
-    .bg-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.2); z-index: -5; }
+    /* Hintergrundbild: Fixiert und füllt den Screen */
+    .bg-fixed { 
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+      z-index: -10; object-fit: cover; display: block;
+    }
+    .bg-overlay { 
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+      background: rgba(0, 0, 0, 0.2); z-index: -5; 
+    }
 
-    /* Haupt-Container: Zentriert den Inhalt vertikal */
+    /* HAUPT-CONTAINER: Verschiebung nach unten */
     .wrap { 
-      position: relative; z-index: 1; width: 100%; height: 100vh; box-sizing: border-box; padding: 30px;
+      position: relative; z-index: 1; width: 100%; height: 100vh; box-sizing: border-box; 
+      /* Hier stellen wir den Abstand nach oben ein (80px schiebt es unter die Batterie) */
+      padding: 80px 30px 30px 30px; 
       display: -webkit-box; 
       -webkit-box-orient: horizontal; 
-      -webkit-box-align: center; /* Vertikale Zentrierung */
-      -webkit-box-pack: justify; /* Abstand zwischen den Panels */
+      -webkit-box-align: start; /* Startet oben (nach dem Padding) */
+      -webkit-box-pack: justify; 
     }
 
     /* Linkes Panel (Uhr) */
     .left { 
       width: 35%; 
-      height: auto; /* Höhe wird durch den Kalender rechts bestimmt */
       display: -webkit-box;
       -webkit-box-orient: vertical;
       -webkit-box-align: stretch;
@@ -40,23 +47,23 @@
     /* Rechtes Panel (Kalender) */
     .right { 
       width: 62%; 
-      height: auto; 
       background: rgba(15, 23, 42, 0.45); 
       border-radius: 25px; 
       border: 1px solid rgba(255,255,255,0.2); 
       overflow: hidden; 
+      /* Verhindert, dass der Kalender unten aus dem Bild ragt */
+      max-height: 80vh; 
     }
 
     /* Gemeinsames Panel-Design */
     .panel { 
       background: rgba(15, 23, 42, 0.45); 
       border-radius: 25px; 
-      height: 100%; 
       text-align: center; 
       border: 1px solid rgba(255,255,255,0.2); 
       display: -webkit-box; 
       -webkit-box-orient: vertical; 
-      -webkit-box-pack: center; /* Zentriert Uhrzeit im Panel */
+      -webkit-box-pack: center; 
       box-sizing: border-box; 
       padding: 30px;
     }
@@ -77,18 +84,16 @@
     }
     .icon-btn.active { background: #3b82f6; border-color: #60a5fa; }
 
-    /* Kalender Grid: Automatische Höhe */
+    /* Kalender Grid */
     .calendar-grid { clear: both; padding: 15px; height: auto; overflow: hidden; }
     .calendar-day-header, .week-number, .calendar-day { float: left; width: 12.5%; box-sizing: border-box; }
     .calendar-day-header { font-size: 0.9rem; text-align: center; opacity: 0.9; padding-bottom: 12px; font-weight: bold; }
     .week-number { color: rgba(255,255,255,0.4); font-size: 0.8rem; text-align: center; padding-top: 25px; font-weight: bold; }
     
-    /* Tag-Zellen */
-    .calendar-day { height: 90px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); overflow: hidden; }
+    .calendar-day { height: 85px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); overflow: hidden; }
     .day-number { padding: 8px; font-size: 1.1rem; font-weight: bold; }
     .today { background: rgba(59, 130, 246, 0.4) !important; border: 1px solid rgba(59, 130, 246, 0.7); }
     
-    /* Termine */
     .month-event { 
       background: rgba(251, 146, 60, 0.9); font-size: 0.65rem; padding: 3px 6px; 
       margin: 2px; border-radius: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
@@ -99,18 +104,18 @@
 </head>
 <body>
 
-  <img src="Winter_1.jpg" class="bg-fixed" alt="" />
+  <img src="Winter_1.jpg" class="bg-fixed" alt="Background" />
   <div class="bg-overlay"></div>
 
   <div class="wrap clearfix">
-    <div class="left">
+    <div class="left" id="leftSide">
       <div class="panel">
         <div id="dateLine" class="date-line">-</div>
         <div id="hoursMinutes" class="time">00:00</div>
       </div>
     </div>
     
-    <div class="right">
+    <div class="right" id="rightSide">
       <div class="calendar-header">
         <div class="nav-group-left">
           <button class="icon-btn" id="prevBtn">&#10094;</button>
@@ -136,6 +141,15 @@
   <script>
     (function(){
       var calendarEvents = {}, viewDate = new Date(), currentView = 'month';
+
+      // Synchronisiert die Höhe des linken Panels mit dem rechten
+      function syncHeight() {
+        var r = document.getElementById('rightSide');
+        var l = document.getElementById('leftSide');
+        if(r && l) {
+            l.style.height = r.offsetHeight + "px";
+        }
+      }
 
       function updateClock(){
         var now = new Date(), days = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
@@ -185,6 +199,8 @@
             addDay(d2.getFullYear(), d2.getMonth(), d2.getDate(), container, today); 
           }
         }
+        // Höhe nach dem Rendern anpassen
+        setTimeout(syncHeight, 50);
       }
 
       function addDay(y, m, d, container, today) {
@@ -232,7 +248,6 @@
         });
       }
 
-      // Event Listener für Buttons
       document.getElementById('prevBtn').onclick = function(){ if(currentView==='month') viewDate.setMonth(viewDate.getMonth()-1); else viewDate.setDate(viewDate.getDate()-7); renderCalendar(); };
       document.getElementById('nextBtn').onclick = function(){ if(currentView==='month') viewDate.setMonth(viewDate.getMonth()+1); else viewDate.setDate(viewDate.getDate()+7); renderCalendar(); };
       document.getElementById('todayBtn').onclick = function(){ viewDate = new Date(); renderCalendar(); };
@@ -240,6 +255,7 @@
       document.getElementById('viewWeek').onclick = function(){ currentView = 'week'; this.className = 'icon-btn active'; document.getElementById('viewMonth').className = 'icon-btn'; renderCalendar(); };
       
       renderCalendar(); loadCal();
+      window.addEventListener('resize', syncHeight);
     })();
   </script>
 </body>
