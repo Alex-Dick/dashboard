@@ -6,32 +6,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Smart Home Dashboard</title>
   <style>
-    /* Absolut kein Hintergrund auf html/body um das "Weiß-Problem" zu umgehen */
+    /* 1. HINTERGRUND & BASIS (Kein background-color: #000) */
     html, body { 
       height: 100%; margin: 0; padding: 0; 
       font-family: -apple-system, sans-serif; 
-      overflow: hidden; 
-      background: none !important; 
+      background: transparent !important; 
+      overflow: hidden;
     }
 
-    /* Diese Ebene ersetzt den Body-Hintergrund und ist schwarz */
-    #blackBase {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background-color: #000 !important; z-index: -20;
-    }
-
-    /* Das Bild liegt über dem Schwarz */
     .bg-fixed { 
       position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
       z-index: -10; object-fit: cover; 
-      transition: opacity 0.5s; 
     }
-    
-    /* Im Nachtmodus wird das Bild unsichtbar -> Schwarz von unten kommt durch */
-    body.night-mode .bg-fixed { opacity: 0 !important; }
 
+    /* 2. LAYOUT */
     .wrap { 
-      position: relative; z-index: 1;
       display: -webkit-box; -webkit-box-orient: horizontal; -webkit-box-align: center; -webkit-box-pack: justify;
       width: 100%; height: 100vh; padding: 25px; box-sizing: border-box; color: #fff;
     }
@@ -40,7 +29,7 @@
     .right { 
       width: 63%; height: 620px; background: rgba(15, 23, 42, 0.5); 
       border-radius: 25px; border: 1px solid rgba(255,255,255,0.2); 
-      overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical;
+      display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden;
     }
 
     .panel { 
@@ -50,57 +39,45 @@
     }
 
     .time { font-size: 8.5vw; font-weight: bold; }
-    .date-line { font-size: 2rem; }
+    .date-line { font-size: 2rem; margin-bottom: 10px; }
 
-    /* BUTTONS: Exakte Zentrierung für iPad 2/3/4 */
+    /* 3. KALENDER HEADER & BUTTONS (Zentrierung fixiert) */
     .calendar-header { 
       padding: 10px 15px; background: rgba(255,255,255,0.1); height: 65px; 
       display: -webkit-box; -webkit-box-orient: horizontal; -webkit-box-align: center;
     }
-    .header-center { -webkit-box-flex: 1; text-align: center; font-weight: bold; font-size: 1.4rem; color: #fff; }
+    .header-center { -webkit-box-flex: 1; text-align: center; font-weight: bold; font-size: 1.4rem; }
     
     .icon-btn { 
       background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; 
       width: 48px; height: 42px; border-radius: 10px; margin: 0 3px;
-      padding: 0; font-size: 1.2rem; display: inline-block; 
-      line-height: 42px; vertical-align: middle; text-align: center;
+      display: inline-block; line-height: 42px; text-align: center; vertical-align: middle; font-size: 1.2rem;
     }
     .icon-btn.active { background: #3b82f6; border-color: #3b82f6; }
 
-    #calendarGrid { -webkit-box-flex: 1; overflow-y: auto; position: relative; -webkit-overflow-scrolling: touch; }
+    #calendarGrid { -webkit-box-flex: 1; overflow-y: auto; position: relative; }
 
-    /* MONAT: KW Spalte schmal & Ohne Border */
-    .month-table { display: table; width: 100%; table-layout: fixed; border-collapse: collapse; border: none; }
-    .month-row { display: table-row; border: none; }
-    .month-cell { display: table-cell; height: 85px; padding: 5px; vertical-align: top; border: none !important; }
-    
-    .kw-cell { 
-      width: 35px !important; color: #3b82f6; opacity: 0.7; font-size: 0.8rem; 
-      text-align: center; border: none !important; padding-top: 10px;
+    /* 4. MONATS-TABELLE (Keine Border) */
+    .month-table { display: table; width: 100%; table-layout: fixed; border-collapse: collapse; }
+    .month-row { display: table-row; }
+    .month-cell { 
+      display: table-cell; height: 85px; padding: 5px; vertical-align: top; 
+      border: none !important; 
     }
-
+    .kw-cell { width: 30px !important; color: #3b82f6; opacity: 0.7; font-size: 0.8rem; text-align: center; }
     .day-num { font-weight: bold; font-size: 1.1rem; }
-    .m-event { 
-      font-size: 0.65rem; padding: 2px 4px; margin-top: 3px; border-radius: 3px; 
-      border-left: 3px solid; background: rgba(255,255,255,0.1);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
 
-    /* Nachtmodus Button */
-    .night-toggle {
-      position: absolute; top: 10px; right: 10px; z-index: 100;
-      background: rgba(255,255,255,0.1); border: none; color: white;
-      width: 44px; height: 44px; border-radius: 50%;
-    }
+    /* 5. WOCHEN-LAYOUT */
+    .week-container { display: -webkit-box; width: 100%; height: 600px; }
+    .time-axis { width: 45px; border-right: 1px solid rgba(255,255,255,0.1); }
+    .time-label { height: 60px; font-size: 0.7rem; text-align: right; padding-right: 5px; opacity: 0.5; }
+    .day-col { -webkit-box-flex: 1; position: relative; border-right: 1px solid rgba(255,255,255,0.05); }
+    .day-head { text-align: center; font-size: 0.8rem; padding: 8px 0; background: rgba(255,255,255,0.05); }
   </style>
 </head>
 <body>
 
-  <div id="blackBase"></div>
-  
-  <img src="Winter_1.jpg" class="bg-fixed" id="mainBg">
-  
-  <button class="night-toggle" id="nightBtn">☾</button>
+  <img src="Winter_1.jpg" class="bg-fixed">
 
   <div class="wrap">
     <div class="left">
@@ -124,8 +101,10 @@
   </div>
 
   <script>
-    var calendarEvents = {}, viewDate = new Date(), currentView = 'month';
+    var viewDate = new Date();
+    var currentView = 'month';
 
+    // Uhrzeit Update
     function updateClock(){
       var now = new Date(), days = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
       document.getElementById('hoursMinutes').textContent = (now.getHours()<10?'0':'')+now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes();
@@ -133,13 +112,15 @@
     }
     setInterval(updateClock, 10000); updateClock();
 
-    document.getElementById('nightBtn').onclick = function(){
-      document.body.classList.toggle('night-mode');
-    };
-
+    // Haupt-Render-Logik
     function render(){
       var grid = document.getElementById('calendarGrid');
       grid.innerHTML = ''; 
+      if(currentView === 'month') renderMonth(grid);
+      else renderWeek(grid);
+    }
+
+    function renderMonth(container) {
       var y = viewDate.getFullYear(), m = viewDate.getMonth();
       var months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
       document.getElementById('calendarMonth').textContent = months[m] + ' ' + y;
@@ -152,24 +133,47 @@
       for(var w=0; w<6; w++) {
         var row = document.createElement('div'); row.className = 'month-row';
         var kw = document.createElement('div'); kw.className = 'month-cell kw-cell';
-        kw.innerText = '•'; // Platzhalter für KW
-        row.appendChild(kw);
+        kw.innerText = '•'; row.appendChild(kw);
 
         for(var d=0; d<7; d++) {
           var cell = document.createElement('div'); cell.className = 'month-cell';
           if(dIdx > 0 && dIdx <= last) {
             cell.innerHTML = '<div class="day-num">'+dIdx+'</div>';
-          } else { cell.style.opacity = '0.1'; }
+          } else { cell.style.opacity = '0.2'; }
           row.appendChild(cell); dIdx++;
         }
         table.appendChild(row); if(dIdx > last) break;
       }
-      grid.appendChild(table);
+      container.appendChild(table);
     }
 
-    document.getElementById('todayBtn').onclick = function(){ viewDate = new Date(); render(); };
-    document.getElementById('prevBtn').onclick = function(){ viewDate.setMonth(viewDate.getMonth()-1); render(); };
-    document.getElementById('nextBtn').onclick = function(){ viewDate.setMonth(viewDate.getMonth()+1); render(); };
+    function renderWeek(container) {
+      document.getElementById('calendarMonth').textContent = "Wochenansicht";
+      var weekDiv = document.createElement('div'); weekDiv.className = 'week-container';
+      
+      var axis = document.createElement('div'); axis.className = 'time-axis';
+      for(var h=8; h<21; h++) {
+        var l = document.createElement('div'); l.className = 'time-label'; l.innerText = h+':00'; axis.appendChild(l);
+      }
+      weekDiv.appendChild(axis);
+
+      for(var i=0; i<7; i++) {
+        var col = document.createElement('div'); col.className = 'day-col';
+        col.innerHTML = '<div class="day-head">'+(i+1)+'.</div>';
+        weekDiv.appendChild(col);
+      }
+      container.appendChild(weekDiv);
+    }
+
+    // Buttons zum Umschalten
+    document.getElementById('viewMonth').onclick = function(){ 
+      currentView='month'; this.className='icon-btn active'; 
+      document.getElementById('viewWeek').className='icon-btn'; render(); 
+    };
+    document.getElementById('viewWeek').onclick = function(){ 
+      currentView='week'; this.className='icon-btn active'; 
+      document.getElementById('viewMonth').className='icon-btn'; render(); 
+    };
 
     render();
   </script>
