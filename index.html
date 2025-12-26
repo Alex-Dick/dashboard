@@ -7,45 +7,54 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Smart Home Dashboard</title>
   <style>
-    html, body { height: 100%; margin: 0; padding: 0; font-family: -apple-system, sans-serif; background-color: transparent !important; color: #fff; overflow: hidden; }
-    .bg-fixed { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -10; object-fit: cover; }
-    .bg-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.2); z-index: -5; }
-    .wrap { position: relative; z-index: 1; width: 100%; height: 100vh; box-sizing: border-box; padding: 25px; display: -webkit-box; -webkit-box-orient: horizontal; -webkit-box-align: center; -webkit-box-pack: justify; }
-    .left, .right { height: 620px; }
-    .left { width: 34%; }
-    .right { width: 63%; background: rgba(15, 23, 42, 0.45); border-radius: 25px; border: 1px solid rgba(255,255,255,0.2); overflow: hidden; display: flex; flex-direction: column; }
-    .panel { background: rgba(15, 23, 42, 0.45); border-radius: 25px; height: 100%; text-align: center; border: 1px solid rgba(255,255,255,0.2); display: -webkit-box; -webkit-box-orient: vertical; -webkit-box-pack: center; box-sizing: border-box; padding: 30px; }
-    .time { font-size: 8.5vw; font-weight: bold; line-height: 1.1; text-shadow: 0 2px 12px rgba(0,0,0,0.8); }
-    .date-line { font-size: 2rem; margin-bottom: 10px; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
-    .calendar-header { padding: 10px 15px; background: rgba(255,255,255,0.1); height: 65px; display: flex; align-items: center; box-sizing: border-box; }
-    .header-center { flex: 1; text-align: center; font-weight: bold; font-size: 1.6rem; }
-    .icon-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; width: 50px; height: 45px; border-radius: 10px; font-size: 1.2rem; margin: 0 3px; cursor: pointer; }
-    .icon-btn.active { background: #3b82f6; border-color: #60a5fa; }
-
-    /* GEMEINSAMES GRID */
-    .calendar-grid { flex: 1; overflow-y: auto; padding: 10px; position: relative; }
+    /* Grund-Setup: Altbau-freundlich */
+    html, body { height: 100%; margin: 0; padding: 0; font-family: Helvetica, Arial, sans-serif; background-color: #000 !important; color: #fff; overflow: hidden; }
+    .bg-fixed { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -10; }
+    .bg-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.3); z-index: -5; }
     
-    /* MONATSSPEZIFISCH */
-    .month-grid .week-number, .month-grid .calendar-day-header-kw { float: left; width: 40px; text-align: center; }
-    .month-grid .calendar-day, .month-grid .calendar-day-header { float: left; width: calc((100% - 40px) / 7); height: 86px; border: 1px solid rgba(255,255,255,0.1); box-sizing: border-box; }
-    .month-event { font-size: 0.65rem; padding: 2px 5px; margin: 2px; border-radius: 4px; border-left: 3px solid #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .wrap { position: relative; z-index: 1; width: 100%; height: 100%; padding: 20px; box-sizing: border-box; }
+    
+    /* Layout via Floats statt Flexbox für iOS 9 */
+    .left { float: left; width: 34%; height: 600px; }
+    .right { float: right; width: 63%; height: 600px; background: rgba(15, 23, 42, 0.5); border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); overflow: hidden; }
 
-    /* WOCHENSPEZIFISCH (Google Style) */
-    .week-container { display: flex; height: 1200px; position: relative; } /* Scrollbarer Bereich */
-    .time-axis { width: 50px; flex-shrink: 0; border-right: 1px solid rgba(255,255,255,0.1); }
-    .time-slot { height: 50px; font-size: 0.7rem; color: rgba(255,255,255,0.5); text-align: center; padding-top: 5px; box-sizing: border-box; }
-    .week-days-wrapper { display: flex; flex: 1; position: relative; }
-    .week-day-col { flex: 1; border-right: 1px solid rgba(255,255,255,0.1); position: relative; }
-    .hour-line { position: absolute; left: 0; width: 100%; border-top: 1px solid rgba(255,255,255,0.05); height: 50px; box-sizing: border-box; }
-    .week-event { position: absolute; left: 2px; right: 2px; padding: 2px 4px; border-radius: 4px; font-size: 0.7rem; border-left: 3px solid #fff; overflow: hidden; z-index: 5; }
+    .panel { background: rgba(15, 23, 42, 0.5); border-radius: 20px; height: 100%; text-align: center; border: 1px solid rgba(255,255,255,0.2); padding-top: 150px; box-sizing: border-box; }
+    .time { font-size: 80px; font-weight: bold; }
+    .date-line { font-size: 24px; margin-bottom: 10px; }
+
+    /* Header */
+    .calendar-header { padding: 10px; background: rgba(255,255,255,0.1); height: 60px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+    .header-center { float: left; width: 50%; text-align: center; font-weight: bold; font-size: 20px; line-height: 40px; }
+    .nav-left { float: left; width: 25%; }
+    .nav-right { float: right; width: 25%; text-align: right; }
+    
+    .icon-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 12px; border-radius: 8px; font-size: 16px; margin: 0 2px; }
+    .icon-btn.active { background: #3b82f6; }
+
+    /* Scroll-Bereich */
+    .calendar-grid { height: 540px; overflow-y: auto; position: relative; clear: both; }
+
+    /* MONATSANSICHT (Float-basiert) */
+    .month-grid .calendar-day-header-kw { float: left; width: 40px; height: 30px; text-align: center; font-size: 12px; }
+    .month-grid .calendar-day-header { float: left; width: 13.5%; height: 30px; text-align: center; font-weight: bold; }
+    .month-grid .week-number { float: left; width: 40px; text-align: center; color: rgba(255,255,255,0.3); font-size: 11px; padding-top: 25px; clear: left; }
+    .month-grid .calendar-day { float: left; width: 13.5%; height: 80px; border: 1px solid rgba(255,255,255,0.1); box-sizing: border-box; background: rgba(255,255,255,0.05); }
+    .month-event { font-size: 10px; padding: 2px; margin: 1px; border-radius: 3px; border-left: 3px solid #fff; overflow: hidden; }
+
+    /* WOCHENANSICHT (Google Style, Float-basiert) */
+    .week-container { width: 100%; position: relative; height: 1200px; }
+    .time-axis { float: left; width: 45px; border-right: 1px solid rgba(255,255,255,0.1); }
+    .time-slot { height: 50px; font-size: 10px; color: rgba(255,255,255,0.5); text-align: center; border-bottom: 1px dotted rgba(255,255,255,0.05); }
+    .week-day-col { float: left; width: 13.8%; height: 1200px; border-right: 1px solid rgba(255,255,255,0.1); position: relative; }
+    .week-event { position: absolute; left: 2px; right: 2px; border-radius: 4px; font-size: 10px; border-left: 3px solid #fff; padding: 2px; overflow: hidden; }
 
     .today-highlight { background: rgba(59, 130, 246, 0.2) !important; }
-    .clearfix::after { content: ""; display: table; clear: both; }
+    .clearfix:after { content: ""; display: table; clear: both; }
   </style>
 </head>
 <body>
 
-  <img src="Winter_1.jpg" class="bg-fixed" alt="" />
+  <img src="Winter_1.jpg" class="bg-fixed" />
   <div class="bg-overlay"></div>
 
   <div class="wrap clearfix">
@@ -57,21 +66,20 @@
     </div>
     
     <div class="right">
-      <div class="calendar-header">
-        <div style="width:180px">
-          <button class="icon-btn" id="prevBtn">&#10094;</button>
-          <button class="icon-btn" id="nextBtn">&#10095;</button>
-          <button class="icon-btn" id="todayBtn">&#8634;</button>
+      <div class="calendar-header clearfix">
+        <div class="nav-left">
+          <button class="icon-btn" id="prevBtn">&lt;</button>
+          <button class="icon-btn" id="nextBtn">&gt;</button>
         </div>
         <div id="calendarMonth" class="header-center">-</div>
-        <div style="width:120px; text-align:right">
-          <button class="icon-btn active" id="viewMonth">田</button>
-          <button class="icon-btn" id="viewWeek">◷</button>
+        <div class="nav-right">
+          <button class="icon-btn active" id="viewMonth">M</button>
+          <button class="icon-btn" id="viewWeek">W</button>
         </div>
       </div>
       
       <div id="calendarGrid" class="calendar-grid">
-        <div id="calendarContent"></div>
+        <div id="calendarContent" class="clearfix"></div>
       </div>
     </div>
   </div>
@@ -83,8 +91,8 @@
 
       function updateClock(){
         var now = new Date(), days = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
-        document.getElementById('hoursMinutes').textContent = (now.getHours()<10?'0':'')+now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes();
-        document.getElementById('dateLine').textContent = days[now.getDay()] + ', ' + now.getDate() + '.' + (now.getMonth() + 1) + '.';
+        document.getElementById('hoursMinutes').innerHTML = (now.getHours()<10?'0':'')+now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes();
+        document.getElementById('dateLine').innerHTML = days[now.getDay()] + ', ' + now.getDate() + '.' + (now.getMonth() + 1) + '.';
       }
       setInterval(updateClock, 1000); updateClock();
 
@@ -96,14 +104,11 @@
 
       function renderCalendar(){
         var content = document.getElementById('calendarContent');
-        var grid = document.getElementById('calendarGrid');
         content.innerHTML = '';
 
         if(currentView === 'month') {
-          grid.className = 'calendar-grid month-grid';
           renderMonthView(content);
         } else {
-          grid.className = 'calendar-grid week-grid';
           renderWeekView(content);
         }
       }
@@ -111,31 +116,36 @@
       function renderMonthView(container) {
         var y = viewDate.getFullYear(), m = viewDate.getMonth(), today = new Date();
         var months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
-        document.getElementById('calendarMonth').textContent = months[m] + ' ' + y;
+        document.getElementById('calendarMonth').innerHTML = months[m] + ' ' + y;
 
-        // Header
         container.innerHTML = '<div class="calendar-day-header-kw">&nbsp;</div>' + 
-          ['Mo','Di','Mi','Do','Fr','Sa','So'].map(d => `<div class="calendar-day-header">${d}</div>`).join('');
+          '<div class="calendar-day-header">Mo</div><div class="calendar-day-header">Di</div><div class="calendar-day-header">Mi</div>' +
+          '<div class="calendar-day-header">Do</div><div class="calendar-day-header">Fr</div><div class="calendar-day-header">Sa</div><div class="calendar-day-header">So</div>';
 
         var first = new Date(y, m, 1).getDay(); first = (first === 0) ? 6 : first - 1;
         var last = new Date(y, m + 1, 0).getDate();
         
-        container.innerHTML += `<div class="week-number" style="color:rgba(255,255,255,0.3); font-size:0.8rem; padding-top:25px; font-weight:bold;">${getWeekNumber(new Date(y, m, 1))}</div>`;
+        container.innerHTML += '<div class="week-number">' + getWeekNumber(new Date(y, m, 1)) + '</div>';
 
-        for (var i=0; i<first; i++) container.innerHTML += '<div class="calendar-day" style="opacity:0"></div>';
+        for (var i=0; i<first; i++) {
+           var empty = document.createElement('div'); empty.className = 'calendar-day'; empty.style.opacity = '0';
+           container.appendChild(empty);
+        }
         for (var d=1; d<=last; d++) {
           if (new Date(y, m, d).getDay() === 1 && d > 1) {
-            container.innerHTML += `<div class="week-number" style="color:rgba(255,255,255,0.3); font-size:0.8rem; padding-top:25px; font-weight:bold;">${getWeekNumber(new Date(y, m, d))}</div>`;
+            var kw = document.createElement('div'); kw.className = 'week-number'; kw.innerHTML = getWeekNumber(new Date(y, m, d));
+            container.appendChild(kw);
           }
           var div = document.createElement('div'); div.className = 'calendar-day';
-          if(d===today.getDate() && m===today.getMonth() && y===today.getFullYear()) div.classList.add('today-highlight');
-          div.innerHTML = `<div style="padding:6px 8px; font-weight:bold">${d}</div>`;
+          if(d===today.getDate() && m===today.getMonth() && y===today.getFullYear()) div.className += ' today-highlight';
+          div.innerHTML = '<div style="padding:4px; font-weight:bold">' + d + '</div>';
           
           var key = y+'-'+m+'-'+d;
           if(calendarEvents[key]) {
-            calendarEvents[key].forEach(ev => {
-              div.innerHTML += `<div class="month-event" style="border-left-color:${ev.color}; background:${ev.color}33">${ev.title}</div>`;
-            });
+            for(var j=0; j<calendarEvents[key].length; j++){
+              var ev = calendarEvents[key][j];
+              div.innerHTML += '<div class="month-event" style="border-left-color:'+ev.color+'; background:'+ev.color+'40">' + ev.title + '</div>';
+            }
           }
           container.appendChild(div);
         }
@@ -146,82 +156,79 @@
         var start = new Date(viewDate); 
         var day = start.getDay();
         start.setDate(start.getDate() - (day === 0 ? 6 : day - 1));
-        document.getElementById('calendarMonth').textContent = "KW " + getWeekNumber(start);
+        document.getElementById('calendarMonth').innerHTML = "KW " + getWeekNumber(start);
 
-        var weekWrapper = document.createElement('div'); weekWrapper.className = 'week-container';
+        var weekWrapper = document.createElement('div'); weekWrapper.className = 'week-container clearfix';
         
-        // Zeitachse
         var timeAxis = document.createElement('div'); timeAxis.className = 'time-axis';
-        for(var h=0; h<24; h++) timeAxis.innerHTML += `<div class="time-slot">${h}:00</div>`;
+        for(var h=0; h<24; h++) timeAxis.innerHTML += '<div class="time-slot">' + h + ':00</div>';
         weekWrapper.appendChild(timeAxis);
 
-        var daysWrapper = document.createElement('div'); daysWrapper.className = 'week-days-wrapper';
-        
         for(var j=0; j<7; j++) {
           var d2 = new Date(start); d2.setDate(start.getDate()+j);
           var col = document.createElement('div'); col.className = 'week-day-col';
-          if(d2.toDateString() === today.toDateString()) col.classList.add('today-highlight');
+          if(d2.toDateString() === today.toDateString()) col.className += ' today-highlight';
           
-          // Hilfslinien
-          for(var h=0; h<24; h++) col.innerHTML += `<div class="hour-line" style="top:${h*50}px"></div>`;
-          
-          // Events platzieren
           var key = d2.getFullYear()+'-'+d2.getMonth()+'-'+d2.getDate();
           if(calendarEvents[key]) {
-            calendarEvents[key].forEach(ev => {
+            for(var k=0; k<calendarEvents[key].length; k++){
+              var ev = calendarEvents[key][k];
               var top = (ev.startHour || 0) * 50;
-              var height = Math.max(25, (ev.duration || 1) * 50);
               var eDiv = document.createElement('div');
               eDiv.className = 'week-event';
-              eDiv.style.cssText = `top:${top}px; height:${height}px; border-left-color:${ev.color}; background:${ev.color}44`;
-              eDiv.textContent = ev.title;
+              eDiv.style.top = top + 'px';
+              eDiv.style.height = '45px';
+              eDiv.style.borderLeftColor = ev.color;
+              eDiv.style.background = ev.color + '60';
+              eDiv.innerHTML = ev.title;
               col.appendChild(eDiv);
-            });
+            }
           }
-          daysWrapper.appendChild(col);
+          weekWrapper.appendChild(col);
         }
-        weekWrapper.appendChild(daysWrapper);
         container.appendChild(weekWrapper);
       }
 
       function loadCal() {
-        Object.keys(fileColors).forEach(function(f) {
-          var x = new XMLHttpRequest(); x.open('GET', 'calendars/' + f, true);
-          x.onreadystatechange = function() {
-            if (x.readyState === 4 && x.status === 200) {
-              var lines = x.responseText.split('\n');
-              for(var i=0; i<lines.length; i++) {
-                if(lines[i].indexOf('BEGIN:VEVENT')!==-1) {
-                  var ev = { color: fileColors[f] }, j = i;
-                  while(lines[j] && lines[j].indexOf('END:VEVENT')===-1){
-                    if(lines[j].indexOf('DTSTART')!==-1){ 
+        var files = ['basic.ics', 'calendar2.ics', 'feiertage-deutschland.ics'];
+        for(var f=0; f<files.length; f++) {
+          (function(fileName){
+            var x = new XMLHttpRequest(); x.open('GET', 'calendars/' + fileName, true);
+            x.onreadystatechange = function() {
+              if (x.readyState === 4 && x.status === 200) {
+                var lines = x.responseText.split('\n');
+                for(var i=0; i<lines.length; i++) {
+                  if(lines[i].indexOf('BEGIN:VEVENT')!==-1) {
+                    var ev = { color: fileColors[fileName] || '#fff' }, j = i;
+                    while(lines[j] && lines[j].indexOf('END:VEVENT')===-1){
+                      if(lines[j].indexOf('DTSTART')!==-1){ 
                         var v = lines[j].split(':')[1]; 
                         if(v) {
-                            ev.d = new Date(v.substring(0,4), parseInt(v.substring(4,6))-1, parseInt(v.substring(6,8)));
-                            ev.startHour = parseInt(v.substring(9,11)) || 0;
+                          ev.d = new Date(v.substring(0,4), parseInt(v.substring(4,6))-1, parseInt(v.substring(6,8)));
+                          if(v.indexOf('T') !== -1) ev.startHour = parseInt(v.substring(9,11));
                         }
+                      }
+                      if(lines[j].indexOf('SUMMARY')!==-1) ev.t = lines[j].split(':')[1].replace(/\\/g, "").trim();
+                      j++;
                     }
-                    if(lines[j].indexOf('SUMMARY')!==-1) ev.t = lines[j].split(':')[1].replace(/\\/g, "").trim();
-                    j++;
+                    if(ev.d){
+                      var k = ev.d.getFullYear()+'-'+ev.d.getMonth()+'-'+ev.d.getDate();
+                      if(!calendarEvents[k]) calendarEvents[k]=[]; 
+                      calendarEvents[k].push({title: ev.t || "Termin", color: ev.color, startHour: ev.startHour || 0});
+                    }
+                    i = j;
                   }
-                  if(ev.d){
-                    var k = ev.d.getFullYear()+'-'+ev.d.getMonth()+'-'+ev.d.getDate();
-                    if(!calendarEvents[k]) calendarEvents[k]=[]; 
-                    calendarEvents[k].push({title: ev.t || "Termin", color: ev.color, startHour: ev.startHour});
-                  }
-                  i = j;
                 }
+                renderCalendar();
               }
-              renderCalendar();
-            }
-          };
-          x.send();
-        });
+            };
+            x.send();
+          })(files[f]);
+        }
       }
 
       document.getElementById('prevBtn').onclick = function(){ if(currentView==='month') viewDate.setMonth(viewDate.getMonth()-1); else viewDate.setDate(viewDate.getDate()-7); renderCalendar(); };
       document.getElementById('nextBtn').onclick = function(){ if(currentView==='month') viewDate.setMonth(viewDate.getMonth()+1); else viewDate.setDate(viewDate.getDate()+7); renderCalendar(); };
-      document.getElementById('todayBtn').onclick = function(){ viewDate = new Date(); renderCalendar(); };
       document.getElementById('viewMonth').onclick = function(){ currentView = 'month'; this.className = 'icon-btn active'; document.getElementById('viewWeek').className = 'icon-btn'; renderCalendar(); };
       document.getElementById('viewWeek').onclick = function(){ currentView = 'week'; this.className = 'icon-btn active'; document.getElementById('viewMonth').className = 'icon-btn'; renderCalendar(); };
       
