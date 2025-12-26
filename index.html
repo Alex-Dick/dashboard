@@ -62,12 +62,15 @@
     /* --- MONATSANSICHT STYLES --- */
     .month-table { display: grid; grid-template-columns: 40px repeat(7, 1fr); height: 100%; }
     .month-cell { border: 0.5px solid rgba(255,255,255,0.1); padding: 4px; min-height: 80px; background: rgba(255,255,255,0.03); }
-    .month-head { text-align: center; font-weight: bold; font-size: 0.8rem; opacity: 0.7; height: 30px; display: flex; align-items: center; justify-content: center; background: transparent; }
-    .kw-cell { display: flex; align-items: center; justify-content: center; color: #3b82f6; font-size: 0.75rem; font-weight: bold; }
+    
+    /* KW Spalte Anpassung: Komplett Transparent */
+    .month-head { text-align: center; font-weight: bold; font-size: 0.8rem; opacity: 0.7; height: 30px; display: flex; align-items: center; justify-content: center; background: transparent !important; border: none !important; }
+    .kw-cell { display: flex; align-items: center; justify-content: center; color: #3b82f6; font-size: 0.75rem; font-weight: bold; background: transparent !important; border-left: none !important; border-bottom: none !important; border-top: none !important; }
+
     .day-n { font-weight: bold; font-size: 1rem; }
     .m-event { background: #f97316; font-size: 0.6rem; padding: 2px 4px; border-radius: 4px; margin-top: 2px; white-space: nowrap; overflow: hidden; }
 
-    /* --- WOCHENANSICHT STYLES (GOOGLE STYLE) --- */
+    /* --- WOCHENANSICHT STYLES --- */
     .week-container { display: flex; position: relative; height: 1000px; padding-top: 40px; }
     .week-header-row { position: absolute; top: 0; left: 50px; right: 0; display: flex; height: 40px; }
     .week-head-day { flex: 1; text-align: center; font-size: 0.8rem; font-weight: bold; border-left: 1px solid rgba(255,255,255,0.1); }
@@ -188,23 +191,18 @@
       document.getElementById('calendarLabel').textContent = "KW " + getKW(start);
 
       var weekWrapper = document.createElement('div'); weekWrapper.className = 'week-container';
-      
-      // Header Zeile (Tage/Datum)
       var headRow = document.createElement('div'); headRow.className = 'week-header-row';
       var daysNames = ['Mo','Di','Mi','Do','Fr','Sa','So'];
-      
-      // Zeit-Sidebar
       var sidebar = document.createElement('div'); sidebar.className = 'time-sidebar';
+      
       for(var h=8; h<=22; h++) {
         var l = document.createElement('div'); l.className = 'hour-label'; l.textContent = h + ':00';
         sidebar.appendChild(l);
       }
       weekWrapper.appendChild(sidebar);
 
-      // Spalten für jeden Tag
       for(var i=0; i<7; i++) {
         var curr = new Date(start); curr.setDate(start.getDate() + i);
-        
         var hDay = document.createElement('div'); hDay.className = 'week-head-day';
         hDay.innerHTML = daysNames[i] + '<br>' + curr.getDate() + '.';
         headRow.appendChild(hDay);
@@ -264,7 +262,6 @@
       });
     }
 
-    // Controls
     document.getElementById('prevBtn').onclick = () => { if(currentView==='month') viewDate.setMonth(viewDate.getMonth()-1); else viewDate.setDate(viewDate.getDate()-7); renderCalendar(); };
     document.getElementById('nextBtn').onclick = () => { if(currentView==='month') viewDate.setMonth(viewDate.getMonth()+1); else viewDate.setDate(viewDate.getDate()+7); renderCalendar(); };
     document.getElementById('todayBtn').onclick = () => { viewDate = new Date(); renderCalendar(); };
