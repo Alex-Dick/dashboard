@@ -6,16 +6,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Smart Home Dashboard</title>
   <style>
+    /* Absolut kein Hintergrund auf html/body um das "Weiß-Problem" zu umgehen */
     html, body { 
-      height: 100%; margin: 0; padding: 0; font-family: -apple-system, sans-serif; 
-      background-color: #000; color: #fff; overflow: hidden; 
+      height: 100%; margin: 0; padding: 0; 
+      font-family: -apple-system, sans-serif; 
+      overflow: hidden; 
+      background: none !important; 
     }
-    .bg-fixed { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -10; object-fit: cover; }
+
+    /* Diese Ebene ersetzt den Body-Hintergrund und ist schwarz */
+    #blackBase {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-color: #000 !important; z-index: -20;
+    }
+
+    /* Das Bild liegt über dem Schwarz */
+    .bg-fixed { 
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+      z-index: -10; object-fit: cover; 
+      transition: opacity 0.5s; 
+    }
     
+    /* Im Nachtmodus wird das Bild unsichtbar -> Schwarz von unten kommt durch */
+    body.night-mode .bg-fixed { opacity: 0 !important; }
+
     .wrap { 
+      position: relative; z-index: 1;
       display: -webkit-box; -webkit-box-orient: horizontal; -webkit-box-align: center; -webkit-box-pack: justify;
-      width: 100%; height: 100vh; padding: 25px; box-sizing: border-box;
+      width: 100%; height: 100vh; padding: 25px; box-sizing: border-box; color: #fff;
     }
+
     .left { width: 34%; height: 620px; }
     .right { 
       width: 63%; height: 620px; background: rgba(15, 23, 42, 0.5); 
@@ -28,39 +48,35 @@
       display: -webkit-box; -webkit-box-orient: vertical; -webkit-box-pack: center; 
       text-align: center; border: 1px solid rgba(255,255,255,0.2); 
     }
-    .time { font-size: 8.5vw; font-weight: bold; }
-    .date-line { font-size: 2rem; margin-bottom: 10px; }
 
-    /* BUTTON FIX: Absolute Zentrierung für alte iPads */
+    .time { font-size: 8.5vw; font-weight: bold; }
+    .date-line { font-size: 2rem; }
+
+    /* BUTTONS: Exakte Zentrierung für iPad 2/3/4 */
     .calendar-header { 
       padding: 10px 15px; background: rgba(255,255,255,0.1); height: 65px; 
       display: -webkit-box; -webkit-box-orient: horizontal; -webkit-box-align: center;
     }
-    .header-center { -webkit-box-flex: 1; text-align: center; font-weight: bold; font-size: 1.4rem; }
+    .header-center { -webkit-box-flex: 1; text-align: center; font-weight: bold; font-size: 1.4rem; color: #fff; }
     
     .icon-btn { 
       background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; 
       width: 48px; height: 42px; border-radius: 10px; margin: 0 3px;
-      padding: 0; font-size: 1.4rem; cursor: pointer;
-      /* Wichtig für Zentrierung auf iPad 2/3/4 */
-      display: inline-block; line-height: 42px; vertical-align: middle; text-align: center;
+      padding: 0; font-size: 1.2rem; display: inline-block; 
+      line-height: 42px; vertical-align: middle; text-align: center;
     }
     .icon-btn.active { background: #3b82f6; border-color: #3b82f6; }
 
     #calendarGrid { -webkit-box-flex: 1; overflow-y: auto; position: relative; -webkit-overflow-scrolling: touch; }
 
-    /* MONATSANSICHT FIX */
+    /* MONAT: KW Spalte schmal & Ohne Border */
     .month-table { display: table; width: 100%; table-layout: fixed; border-collapse: collapse; border: none; }
     .month-row { display: table-row; border: none; }
-    .month-cell { 
-      display: table-cell; height: 85px; padding: 5px; vertical-align: top; 
-      border: none !important; /* Entfernt alle Border */
-    }
+    .month-cell { display: table-cell; height: 85px; padding: 5px; vertical-align: top; border: none !important; }
     
-    /* KW Spalte schmaler */
     .kw-cell { 
-      width: 25px !important; font-size: 0.7rem; color: #3b82f6; 
-      opacity: 0.7; text-align: center; padding-top: 10px; border: none !important;
+      width: 35px !important; color: #3b82f6; opacity: 0.7; font-size: 0.8rem; 
+      text-align: center; border: none !important; padding-top: 10px;
     }
 
     .day-num { font-weight: bold; font-size: 1.1rem; }
@@ -70,17 +86,22 @@
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
-    /* WOCHENANSICHT */
-    .week-container { display: -webkit-box; width: 100%; height: 900px; }
-    .time-axis { width: 45px; border-right: 1px solid rgba(255,255,255,0.1); }
-    .time-label { height: 60px; font-size: 0.7rem; text-align: right; padding-right: 5px; opacity: 0.5; }
-    .day-col { -webkit-box-flex: 1; position: relative; border-right: 1px solid rgba(255,255,255,0.05); }
-    .day-head { text-align: center; font-size: 0.8rem; padding: 8px 0; background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1); }
+    /* Nachtmodus Button */
+    .night-toggle {
+      position: absolute; top: 10px; right: 10px; z-index: 100;
+      background: rgba(255,255,255,0.1); border: none; color: white;
+      width: 44px; height: 44px; border-radius: 50%;
+    }
   </style>
 </head>
 <body>
 
-  <img src="Winter_1.jpg" class="bg-fixed">
+  <div id="blackBase"></div>
+  
+  <img src="Winter_1.jpg" class="bg-fixed" id="mainBg">
+  
+  <button class="night-toggle" id="nightBtn">☾</button>
+
   <div class="wrap">
     <div class="left">
       <div class="panel">
@@ -104,7 +125,6 @@
 
   <script>
     var calendarEvents = {}, viewDate = new Date(), currentView = 'month';
-    var fileColors = { 'basic.ics': '#3b82f6', 'calendar2.ics': '#f97316', 'feiertage-deutschland.ics': '#ef4444' };
 
     function updateClock(){
       var now = new Date(), days = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
@@ -113,58 +133,33 @@
     }
     setInterval(updateClock, 10000); updateClock();
 
-    function getWeekNumber(d) {
-      var date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-      date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay()||7));
-      return Math.ceil((((date - new Date(Date.UTC(date.getUTCFullYear(),0,1))) / 86400000) + 1)/7);
-    }
+    document.getElementById('nightBtn').onclick = function(){
+      document.body.classList.toggle('night-mode');
+    };
 
     function render(){
       var grid = document.getElementById('calendarGrid');
       grid.innerHTML = ''; 
-      if(currentView === 'month') renderMonth(grid);
-      else renderWeek(grid);
-    }
-
-    function renderMonth(grid) {
       var y = viewDate.getFullYear(), m = viewDate.getMonth();
       var months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
       document.getElementById('calendarMonth').textContent = months[m] + ' ' + y;
       
       var table = document.createElement('div'); table.className = 'month-table';
-      
-      // Header
-      var hRow = document.createElement('div'); hRow.className = 'month-row';
-      ['KW','Mo','Di','Mi','Do','Fr','Sa','So'].forEach(function(t, i){
-        var c = document.createElement('div'); c.className = 'month-cell' + (i===0?' kw-cell':'');
-        c.style.height = '25px'; c.style.fontSize = '0.7rem'; c.innerText = t;
-        hRow.appendChild(c);
-      });
-      table.appendChild(hRow);
-
       var first = new Date(y, m, 1).getDay(); first = (first === 0) ? 6 : first - 1;
       var last = new Date(y, m + 1, 0).getDate();
       var dIdx = 1 - first;
 
       for(var w=0; w<6; w++) {
         var row = document.createElement('div'); row.className = 'month-row';
-        
-        // KW Spalte
         var kw = document.createElement('div'); kw.className = 'month-cell kw-cell';
-        var kwDate = new Date(y, m, dIdx + (dIdx < 1 ? first : 0));
-        kw.innerText = getWeekNumber(kwDate);
+        kw.innerText = '•'; // Platzhalter für KW
         row.appendChild(kw);
 
         for(var d=0; d<7; d++) {
           var cell = document.createElement('div'); cell.className = 'month-cell';
           if(dIdx > 0 && dIdx <= last) {
             cell.innerHTML = '<div class="day-num">'+dIdx+'</div>';
-            var k = y+'-'+m+'-'+dIdx;
-            if(calendarEvents[k]) calendarEvents[k].forEach(function(e){
-              var ev = document.createElement('div'); ev.className = 'm-event';
-              ev.style.borderColor = e.c; ev.innerText = e.t; cell.appendChild(ev);
-            });
-          } else { cell.style.opacity = '0.2'; }
+          } else { cell.style.opacity = '0.1'; }
           row.appendChild(cell); dIdx++;
         }
         table.appendChild(row); if(dIdx > last) break;
@@ -172,75 +167,11 @@
       grid.appendChild(table);
     }
 
-    function renderWeek(grid) {
-      var start = new Date(viewDate);
-      var day = start.getDay();
-      start.setDate(start.getDate() - (day === 0 ? 6 : day - 1));
-      document.getElementById('calendarMonth').textContent = "KW " + getWeekNumber(start);
-
-      var container = document.createElement('div'); container.className = 'week-container';
-      var axis = document.createElement('div'); axis.className = 'time-axis';
-      for(var h=8; h<21; h++) {
-        var l = document.createElement('div'); l.className = 'time-label'; l.innerText = h+':00'; axis.appendChild(l);
-      }
-      container.appendChild(axis);
-
-      var days = ['Mo','Di','Mi','Do','Fr','Sa','So'];
-      for(var i=0; i<7; i++) {
-        var curr = new Date(start); curr.setDate(start.getDate() + i);
-        var col = document.createElement('div'); col.className = 'day-col';
-        col.innerHTML = '<div class="day-head">'+days[i]+' '+curr.getDate()+'.</div>';
-        
-        var k = curr.getFullYear()+'-'+curr.getMonth()+'-'+curr.getDate();
-        if(calendarEvents[k]) calendarEvents[k].forEach(function(e){
-          var eb = document.createElement('div'); eb.className = 'm-event'; // Nutze Monatsstyle für Stabilität
-          eb.style.borderColor = e.c; eb.style.margin = '5px'; eb.innerText = e.t;
-          col.appendChild(eb);
-        });
-        container.appendChild(col);
-      }
-      grid.appendChild(container);
-    }
-
-    function loadCal() {
-      calendarEvents = {};
-      Object.keys(fileColors).forEach(function(f) {
-        var x = new XMLHttpRequest(); x.open('GET', 'calendars/' + f + '?t=' + new Date().getTime(), true);
-        x.onreadystatechange = function() {
-          if (x.readyState === 4 && x.status === 200) {
-            var lines = x.responseText.split('\n');
-            for(var i=0; i<lines.length; i++) {
-              if(lines[i].indexOf('BEGIN:VEVENT')!==-1) {
-                var ev = {c: fileColors[f]}, j = i;
-                while(lines[j] && lines[j].indexOf('END:VEVENT')===-1){
-                  if(lines[j].indexOf('DTSTART')!==-1){ 
-                    var val = lines[j].split(':')[1];
-                    if(val) ev.d = new Date(val.substring(0,4), parseInt(val.substring(4,6))-1, parseInt(val.substring(6,8)));
-                  }
-                  if(lines[j].indexOf('SUMMARY')!==-1) ev.t = lines[j].split(':')[1].replace(/\\/g, "").trim();
-                  j++;
-                }
-                if(ev.d){
-                  var k = ev.d.getFullYear()+'-'+ev.d.getMonth()+'-'+ev.d.getDate();
-                  if(!calendarEvents[k]) calendarEvents[k]=[]; calendarEvents[k].push(ev);
-                }
-                i = j;
-              }
-            }
-            render();
-          }
-        };
-        x.send();
-      });
-    }
-
-    document.getElementById('viewMonth').onclick = function(){ currentView='month'; this.className='icon-btn active'; document.getElementById('viewWeek').className='icon-btn'; render(); };
-    document.getElementById('viewWeek').onclick = function(){ currentView='week'; this.className='icon-btn active'; document.getElementById('viewMonth').className='icon-btn'; render(); };
-    document.getElementById('prevBtn').onclick = function(){ if(currentView==='month') viewDate.setMonth(viewDate.getMonth()-1); else viewDate.setDate(viewDate.getDate()-7); render(); };
-    document.getElementById('nextBtn').onclick = function(){ if(currentView==='month') viewDate.setMonth(viewDate.getMonth()+1); else viewDate.setDate(viewDate.getDate()+7); render(); };
     document.getElementById('todayBtn').onclick = function(){ viewDate = new Date(); render(); };
+    document.getElementById('prevBtn').onclick = function(){ viewDate.setMonth(viewDate.getMonth()-1); render(); };
+    document.getElementById('nextBtn').onclick = function(){ viewDate.setMonth(viewDate.getMonth()+1); render(); };
 
-    loadCal();
+    render();
   </script>
 </body>
 </html>
