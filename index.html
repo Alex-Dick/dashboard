@@ -89,7 +89,7 @@
 
     .calendar-grid { clear: both; padding: 12px; overflow: hidden; }
     
-    /* SPALTEN-LAYOUT */
+    /* MONATSANSICHT LAYOUT */
     .week-number, .calendar-day-header-kw { float: left; width: 40px; box-sizing: border-box; }
     .calendar-day, .calendar-day-header { float: left; width: calc((100% - 40px) / 7); box-sizing: border-box; }
     
@@ -100,7 +100,9 @@
     .day-number { padding: 6px 8px; font-size: 1.1rem; font-weight: bold; }
     .today { background: rgba(59, 130, 246, 0.4) !important; border: 1px solid rgba(59, 130, 246, 0.7); }
     
-    /* EVENT-STYLE MIT FARB-INDICATOR */
+    /* WOCHENANSICHT SPEZIFISCH (Noch identisch, aber isoliert) */
+    .week-view .calendar-day { height: 500px; } /* Platzhalter für späteres Raster */
+
     .month-event { 
       font-size: 0.65rem; padding: 2px 5px; margin: 2px; border-radius: 4px; 
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
@@ -139,10 +141,13 @@
         </div>
       </div>
       
-      <div id="calendarGrid" class="calendar-grid clearfix">
-        <div class="calendar-day-header-kw">&nbsp;</div>
+      <div id="calendarHeaderRow" class="calendar-grid clearfix" style="padding-bottom: 0;">
+        <div class="calendar-day-header-kw" id="kwHeader">&nbsp;</div>
         <div class="calendar-day-header">Mo</div><div class="calendar-day-header">Di</div><div class="calendar-day-header">Mi</div>
         <div class="calendar-day-header">Do</div><div class="calendar-day-header">Fr</div><div class="calendar-day-header">Sa</div><div class="calendar-day-header">So</div>
+      </div>
+
+      <div id="calendarGrid" class="calendar-grid clearfix" style="padding-top: 0;">
         <div id="calendarDays"></div>
       </div>
     </div>
@@ -152,7 +157,6 @@
     (function(){
       var calendarEvents = {}, viewDate = new Date(), currentView = 'month';
 
-      // FARB-ZUORDNUNG
       var fileColors = {
         'basic.ics': '#3b82f6',             
         'calendar2.ics': '#f97316',         
@@ -172,40 +176,59 @@
         return Math.ceil((((date - new Date(Date.UTC(date.getUTCFullYear(),0,1))) / 86400000) + 1)/7);
       }
 
+      // HAUPT-RENDERING FUNKTION
       function renderCalendar(){
-        var y = viewDate.getFullYear(), m = viewDate.getMonth(), today = new Date();
-        var months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
-        var container = document.getElementById('calendarDays'), grid = document.getElementById('calendarGrid');
+        var container = document.getElementById('calendarDays');
+        var grid = document.getElementById('calendarGrid');
         container.innerHTML = '';
 
         if(currentView === 'month') {
           grid.className = 'calendar-grid clearfix';
-          document.getElementById('calendarMonth').textContent = months[m] + ' ' + y;
-          var first = new Date(y, m, 1).getDay(); first = (first === 0) ? 6 : first - 1;
-          var last = new Date(y, m + 1, 0).getDate();
-          
-          var kwDiv = document.createElement('div'); kwDiv.className = 'week-number'; 
-          kwDiv.textContent = getWeekNumber(new Date(y, m, 1)); container.appendChild(kwDiv);
-
-          for (var i=0; i<first; i++) { 
-            var e = document.createElement('div'); e.className = 'calendar-day'; e.style.opacity='0'; container.appendChild(e); 
-          }
-          for (var d=1; d<=last; d++) {
-            if (new Date(y, m, d).getDay() === 1 && d > 1) {
-              var nkw = document.createElement('div'); nkw.className = 'week-number'; 
-              nkw.textContent = getWeekNumber(new Date(y, m, d)); container.appendChild(nkw);
-            }
-            addDay(y, m, d, container, today);
-          }
+          document.getElementById('kwHeader').style.display = 'block'; // Zeige KW Spalte
+          renderMonthView(container);
         } else {
           grid.className = 'calendar-grid week-view clearfix';
-          var start = new Date(viewDate); var day = start.getDay();
-          start.setDate(start.getDate() - (day === 0 ? 6 : day - 1));
-          document.getElementById('calendarMonth').textContent = "KW " + getWeekNumber(start);
-          for(var j=0; j<7; j++) { 
-            var d2 = new Date(start); d2.setDate(start.getDate()+j); 
-            addDay(d2.getFullYear(), d2.getMonth(), d2.getDate(), container, today); 
+          document.getElementById('kwHeader').style.display = 'none'; // Verstecke KW Spalte in Woche (optional)
+          renderWeekView(container);
+        }
+      }
+
+      // LOGIK FÜR MONAT
+      function renderMonthView(container) {
+        var y = viewDate.getFullYear(), m = viewDate.getMonth(), today = new Date();
+        var months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+        document.getElementById('calendarMonth').textContent = months[m] + ' ' + y;
+        
+        var first = new Date(y, m, 1).getDay(); first = (first === 0) ? 6 : first - 1;
+        var last = new Date(y, m + 1, 0).getDate();
+        
+        var kwDiv = document.createElement('div'); kwDiv.className = 'week-number'; 
+        kwDiv.textContent = getWeekNumber(new Date(y, m, 1)); container.appendChild(kwDiv);
+
+        for (var i=0; i<first; i++) { 
+          var e = document.createElement('div'); e.className = 'calendar-day'; e.style.opacity='0'; container.appendChild(e); 
+        }
+        for (var d=1; d<=last; d++) {
+          if (new Date(y, m, d).getDay() === 1 && d > 1) {
+            var nkw = document.createElement('div'); nkw.className = 'week-number'; 
+            nkw.textContent = getWeekNumber(new Date(y, m, d)); container.appendChild(nkw);
           }
+          addDay(y, m, d, container, today);
+        }
+      }
+
+      // LOGIK FÜR WOCHE
+      function renderWeekView(container) {
+        var today = new Date();
+        var start = new Date(viewDate); 
+        var day = start.getDay();
+        start.setDate(start.getDate() - (day === 0 ? 6 : day - 1));
+        
+        document.getElementById('calendarMonth').textContent = "Kalenderwoche " + getWeekNumber(start);
+        
+        for(var j=0; j<7; j++) { 
+          var d2 = new Date(start); d2.setDate(start.getDate()+j); 
+          addDay(d2.getFullYear(), d2.getMonth(), d2.getDate(), container, today); 
         }
       }
 
@@ -221,7 +244,7 @@
             e.textContent = ev.title;
             if(ev.color) {
               e.style.borderLeftColor = ev.color;
-              e.style.backgroundColor = ev.color + '33'; // 20% Deckkraft
+              e.style.backgroundColor = ev.color + '33';
             }
             div.appendChild(e);
           });
