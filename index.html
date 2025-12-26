@@ -89,7 +89,7 @@
 
     .calendar-grid { clear: both; padding: 12px; overflow: hidden; }
     
-    /* FIX: Die Spalte bleibt da, KW Text ist weg */
+    /* SPALTEN-LAYOUT */
     .week-number, .calendar-day-header-kw { float: left; width: 40px; box-sizing: border-box; }
     .calendar-day, .calendar-day-header { float: left; width: calc((100% - 40px) / 7); box-sizing: border-box; }
     
@@ -100,9 +100,11 @@
     .day-number { padding: 6px 8px; font-size: 1.1rem; font-weight: bold; }
     .today { background: rgba(59, 130, 246, 0.4) !important; border: 1px solid rgba(59, 130, 246, 0.7); }
     
+    /* EVENT-STYLE MIT FARB-INDICATOR */
     .month-event { 
-      background: rgba(251, 146, 60, 0.9); font-size: 0.65rem; padding: 3px 6px; 
-      margin: 2px; border-radius: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+      font-size: 0.65rem; padding: 2px 5px; margin: 2px; border-radius: 4px; 
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+      border-left: 3px solid rgba(255,255,255,0.5);
     }
 
     .clearfix::after { content: ""; display: table; clear: both; }
@@ -149,6 +151,13 @@
   <script>
     (function(){
       var calendarEvents = {}, viewDate = new Date(), currentView = 'month';
+
+      // FARB-ZUORDNUNG
+      var fileColors = {
+        'basic.ics': '#3b82f6',             
+        'calendar2.ics': '#f97316',         
+        'feiertage-deutschland.ics': '#ef4444' 
+      };
 
       function updateClock(){
         var now = new Date(), days = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
@@ -207,21 +216,28 @@
         var key = y+'-'+m+'-'+d;
         if(calendarEvents[key]) {
           calendarEvents[key].forEach(function(ev){
-            var e = document.createElement('div'); e.className = 'month-event'; e.textContent = ev.title; div.appendChild(e);
+            var e = document.createElement('div'); 
+            e.className = 'month-event'; 
+            e.textContent = ev.title;
+            if(ev.color) {
+              e.style.borderLeftColor = ev.color;
+              e.style.backgroundColor = ev.color + '33'; // 20% Deckkraft
+            }
+            div.appendChild(e);
           });
         }
         container.appendChild(div);
       }
 
       function loadCal() {
-        ['basic.ics', 'calendar2.ics', 'feiertage-deutschland.ics'].forEach(function(f) {
+        Object.keys(fileColors).forEach(function(f) {
           var x = new XMLHttpRequest(); x.open('GET', 'calendars/' + f, true);
           x.onreadystatechange = function() {
             if (x.readyState === 4 && x.status === 200) {
               var lines = x.responseText.split('\n');
               for(var i=0; i<lines.length; i++) {
                 if(lines[i].indexOf('BEGIN:VEVENT')!==-1) {
-                  var ev = {}, j = i;
+                  var ev = { color: fileColors[f] }, j = i;
                   while(lines[j] && lines[j].indexOf('END:VEVENT')===-1){
                     if(lines[j].indexOf('DTSTART')!==-1){ var v = lines[j].split(':')[1]; if(v) ev.d = new Date(v.substring(0,4), parseInt(v.substring(4,6))-1, parseInt(v.substring(6,8))); }
                     if(lines[j].indexOf('SUMMARY')!==-1) ev.t = lines[j].split(':')[1].replace(/\\/g, "").trim();
@@ -230,7 +246,7 @@
                   if(ev.d){
                     var k = ev.d.getFullYear()+'-'+ev.d.getMonth()+'-'+ev.d.getDate();
                     if(!calendarEvents[k]) calendarEvents[k]=[]; 
-                    calendarEvents[k].push({title: ev.t || "Termin"});
+                    calendarEvents[k].push({title: ev.t || "Termin", color: ev.color});
                   }
                   i = j;
                 }
