@@ -56,22 +56,33 @@
     #calendarGrid { flex-grow: 1; overflow-y: auto; position: relative; }
 
     /* MONATSANSICHT */
-    .month-table { display: grid; grid-template-columns: 40px repeat(7, 1fr); height: 100%; }
-    .month-cell { border: 0.5px solid rgba(255,255,255,0.1); padding: 4px; min-height: 80px; background: rgba(255,255,255,0.03); }
+    .month-table { display: grid; grid-template-columns: 40px repeat(7, 1fr); width: 100%; }
+    .month-cell { 
+      border: 0.5px solid rgba(255,255,255,0.1); 
+      padding: 4px; 
+      height: 90px; /* FESTE GRÖSSE */
+      background: rgba(255,255,255,0.03); 
+      overflow: hidden; 
+    }
     
-    /* KW Header & Zellen: Jetzt komplett ohne Ränder */
     .month-head { text-align: center; font-weight: bold; font-size: 0.8rem; opacity: 0.7; height: 30px; display: flex; align-items: center; justify-content: center; background: transparent !important; border: none !important; }
     .kw-cell { display: flex; align-items: center; justify-content: center; color: #3b82f6; font-size: 0.75rem; font-weight: bold; background: transparent !important; border: none !important; }
 
-    .day-n { font-weight: bold; font-size: 1rem; margin-bottom: 4px; }
+    .day-n { font-weight: bold; font-size: 0.9rem; margin-bottom: 2px; }
+    
+    /* TERMIN TEXT STYLES */
     .m-event { 
-      font-size: 0.65rem; padding: 2px 0; border-left: 3px solid transparent; 
-      padding-left: 5px; margin-top: 1px; white-space: nowrap; overflow: hidden; 
-      text-overflow: ellipsis;
+      font-size: 0.65rem; 
+      padding: 1px 0 1px 5px; 
+      border-left: 3px solid transparent; 
+      margin-top: 1px; 
+      white-space: nowrap; 
+      overflow: hidden; 
+      text-overflow: ellipsis; /* ABSCHNEIDEN MIT ... */
     }
 
     /* WOCHENANSICHT */
-    .week-container { display: flex; position: relative; height: 1000px; padding-top: 40px; }
+    .week-container { display: flex; position: relative; height: 950px; padding-top: 40px; }
     .week-header-row { position: absolute; top: 0; left: 50px; right: 0; display: flex; height: 40px; }
     .week-head-day { flex: 1; text-align: center; font-size: 0.8rem; font-weight: bold; border-left: 1px solid rgba(255,255,255,0.1); }
     
@@ -83,7 +94,11 @@
       position: absolute; left: 2px; right: 2px; 
       background: rgba(255, 255, 255, 0.1);
       border-radius: 4px; border-left: 4px solid transparent; 
-      padding: 3px; font-size: 0.75rem; overflow: hidden;
+      padding: 3px; font-size: 0.7rem; 
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2; /* MAXIMAL 2 ZEILEN */
+      -webkit-box-orient: vertical;
     }
 
     .today-bg { background: rgba(59, 130, 246, 0.15) !important; }
@@ -153,27 +168,23 @@
       var y = viewDate.getFullYear(), m = viewDate.getMonth();
       var months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
       document.getElementById('calendarLabel').textContent = months[m] + ' ' + y;
-      
       var grid = document.createElement('div'); grid.className = 'month-table';
-      
       ['','Mo','Di','Mi','Do','Fr','Sa','So'].forEach(h => {
         var c = document.createElement('div'); c.className = 'month-cell month-head'; c.textContent = h; grid.appendChild(c);
       });
-
       var first = new Date(y, m, 1).getDay(); first = (first === 0) ? 6 : first - 1;
       var last = new Date(y, m + 1, 0).getDate();
-      var dayCounter = 1 - first;
-
+      var dC = 1 - first;
       for(var w=0; w<6; w++) {
         var kw = document.createElement('div'); kw.className = 'month-cell kw-cell';
-        kw.textContent = getKW(new Date(y, m, dayCounter + (dayCounter < 1 ? first : 0)));
+        kw.textContent = getKW(new Date(y, m, dC + (dC < 1 ? first : 0)));
         grid.appendChild(kw);
         for(var d=0; d<7; d++) {
           var cell = document.createElement('div'); cell.className = 'month-cell';
-          if(dayCounter > 0 && dayCounter <= last) {
-            if(dayCounter===today.getDate() && m===today.getMonth() && y===today.getFullYear()) cell.classList.add('today-bg');
-            cell.innerHTML = `<div class="day-n">${dayCounter}</div>`;
-            var key = y+'-'+m+'-'+dayCounter;
+          if(dC > 0 && dC <= last) {
+            if(dC===today.getDate() && m===today.getMonth() && y===today.getFullYear()) cell.classList.add('today-bg');
+            cell.innerHTML = `<div class="day-n">${dC}</div>`;
+            var key = y+'-'+m+'-'+dC;
             if(calendarEvents[key]) {
               calendarEvents[key].forEach(ev => {
                 var div = document.createElement('div');
@@ -185,28 +196,26 @@
               });
             }
           }
-          grid.appendChild(cell);
-          dayCounter++;
+          grid.appendChild(cell); dC++;
         }
-        if(dayCounter > last) break;
+        if(dC > last) break;
       }
       container.appendChild(grid);
     }
 
     function renderWeekView(container, today) {
-      var start = new Date(viewDate);
-      var day = start.getDay();
+      var start = new Date(viewDate); var day = start.getDay();
       start.setDate(start.getDate() - (day === 0 ? 6 : day - 1));
       document.getElementById('calendarLabel').textContent = "KW " + getKW(start);
       var weekWrapper = document.createElement('div'); weekWrapper.className = 'week-container';
       var headRow = document.createElement('div'); headRow.className = 'week-header-row';
-      var daysNames = ['Mo','Di','Mi','Do','Fr','Sa','So'];
       var sidebar = document.createElement('div'); sidebar.className = 'time-sidebar';
       for(var h=8; h<=22; h++) {
         var l = document.createElement('div'); l.className = 'hour-label'; l.textContent = h + ':00';
         sidebar.appendChild(l);
       }
       weekWrapper.appendChild(sidebar);
+      var daysNames = ['Mo','Di','Mi','Do','Fr','Sa','So'];
       for(var i=0; i<7; i++) {
         var curr = new Date(start); curr.setDate(start.getDate() + i);
         var hDay = document.createElement('div'); hDay.className = 'week-head-day';
@@ -222,7 +231,7 @@
               card.style.top = ((ev.h - 8) * 60 + ev.m) + 'px';
               card.style.height = '50px';
               card.style.borderColor = ev.color;
-              card.innerHTML = `<b style="color:${ev.color}">${ev.time}</b><br>${ev.t}`;
+              card.innerHTML = `<b style="color:${ev.color}">${ev.time}</b> ${ev.t}`;
               col.appendChild(card);
             }
           });
