@@ -70,8 +70,8 @@
 
     .day-n { font-weight: bold; font-size: 0.9rem; margin-bottom: 2px; }
     
-    /* Tage aus anderen Monaten */
-    .other-month { opacity: 0.25; filter: grayscale(1); }
+    /* Abgedunkelte Tage für Vormonat/Folgemonat */
+    .other-month { opacity: 0.3; }
 
     .m-event { 
       font-size: 0.65rem; padding: 1px 0 1px 5px; border-left: 3px solid transparent; 
@@ -163,51 +163,48 @@
         var c = document.createElement('div'); c.className = 'month-cell month-head'; c.textContent = h; grid.appendChild(c);
       });
 
-      // Erster Tag des Monats
-      var firstDayDate = new Date(y, m, 1);
-      var firstDayIndex = firstDayDate.getDay(); 
-      firstDayIndex = (firstDayIndex === 0) ? 6 : firstDayIndex - 1; // Mo=0
+      var firstOfMonth = new Date(y, m, 1);
+      var lastOfMonth = new Date(y, m + 1, 0);
+      
+      // Wochentag des 1. (0=Mo, 6=So)
+      var startOffset = (firstOfMonth.getDay() === 0) ? 6 : firstOfMonth.getDay() - 1;
+      
+      // Startdatum berechnen (Anfang der ersten Woche)
+      var currentDate = new Date(firstOfMonth);
+      currentDate.setDate(currentDate.getDate() - startOffset);
 
-      // Startdatum für das Grid (kann im Vormonat liegen)
-      var startDate = new Date(firstDayDate);
-      startDate.setDate(startDate.getDate() - firstDayIndex);
-
-      var tempDate = new Date(startDate);
-
-      // Wir rendern immer 6 Wochen (42 Tage) für ein konstantes Layout
-      for(var w=0; w<6; w++) {
-        // KW Spalte
-        var kw = document.createElement('div'); kw.className = 'month-cell kw-cell';
-        kw.textContent = getKW(tempDate);
-        grid.appendChild(kw);
-
-        for(var d=0; d<7; d++) {
-          var cell = document.createElement('div'); cell.className = 'month-cell';
-          
-          // Markiere Tage außerhalb des aktuellen Monats
-          if(tempDate.getMonth() !== m) cell.classList.add('other-month');
-          
-          // Heute markieren
-          if(tempDate.toDateString() === today.toDateString()) cell.classList.add('today-bg');
-
-          cell.innerHTML = `<div class="day-n">${tempDate.getDate()}</div>`;
-          
-          // Events rendern (nur für den aktuellen Monat, oder optional für alle - hier für alle)
-          var key = tempDate.getFullYear()+'-'+tempDate.getMonth()+'-'+tempDate.getDate();
-          if(calendarEvents[key]) {
-            calendarEvents[key].forEach(ev => {
-              var div = document.createElement('div');
-              div.className = 'm-event';
-              div.style.borderColor = ev.color;
-              div.style.color = ev.color;
-              div.textContent = ev.t;
-              cell.appendChild(div);
-            });
-          }
-          
-          grid.appendChild(cell);
-          tempDate.setDate(tempDate.getDate() + 1);
+      // Wir rendern nur so viele Wochen, wie nötig sind, um den Monat abzuschließen
+      while (currentDate <= lastOfMonth || currentDate.getDay() !== 1) {
+        // Neue Woche beginnt
+        if (currentDate.getDay() === 1 || currentDate.getTime() === (firstOfMonth.getTime() - startOffset * 86400000)) {
+           var kw = document.createElement('div'); kw.className = 'month-cell kw-cell';
+           kw.textContent = getKW(currentDate);
+           grid.appendChild(kw);
         }
+
+        var cell = document.createElement('div'); cell.className = 'month-cell';
+        if (currentDate.getMonth() !== m) cell.classList.add('other-month');
+        if (currentDate.toDateString() === today.toDateString()) cell.classList.add('today-bg');
+
+        cell.innerHTML = `<div class="day-n">${currentDate.getDate()}</div>`;
+        
+        var key = currentDate.getFullYear()+'-'+currentDate.getMonth()+'-'+currentDate.getDate();
+        if(calendarEvents[key]) {
+          calendarEvents[key].forEach(ev => {
+            var div = document.createElement('div');
+            div.className = 'm-event';
+            div.style.borderColor = ev.color;
+            div.style.color = ev.color;
+            div.textContent = ev.t;
+            cell.appendChild(div);
+          });
+        }
+        
+        grid.appendChild(cell);
+        currentDate.setDate(currentDate.getDate() + 1);
+
+        // Sicherheitsstopp: Wenn die Woche voll ist (Sonntag vorbei) und wir bereits im nächsten Monat sind, hören wir auf.
+        if (currentDate.getDay() === 1 && currentDate > lastOfMonth) break;
       }
       container.appendChild(grid);
     }
