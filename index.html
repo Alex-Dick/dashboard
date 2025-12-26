@@ -89,21 +89,20 @@
 
     .calendar-grid { clear: both; padding: 12px; overflow: hidden; }
     
-    /* ANPASSUNG: KW Spalte schmal, Tage nehmen Rest ein */
-    .calendar-day-header, .calendar-day { float: left; width: 13.8%; box-sizing: border-box; }
-    .week-number-header, .week-number { float: left; width: 34px; box-sizing: border-box; }
+    /* FIX: Die Spalte bleibt da, KW Text ist weg */
+    .week-number, .calendar-day-header-kw { float: left; width: 40px; box-sizing: border-box; }
+    .calendar-day, .calendar-day-header { float: left; width: calc((100% - 40px) / 7); box-sizing: border-box; }
     
-    .calendar-day-header { font-size: 0.9rem; text-align: center; opacity: 0.9; padding-bottom: 10px; font-weight: bold; }
-    .week-number { color: rgba(59, 130, 246, 0.6); font-size: 0.8rem; text-align: center; padding-top: 25px; font-weight: bold; }
+    .calendar-day-header, .calendar-day-header-kw { font-size: 0.9rem; text-align: center; opacity: 0.9; padding-bottom: 10px; font-weight: bold; }
+    .week-number { color: rgba(255,255,255,0.3); font-size: 0.8rem; text-align: center; padding-top: 25px; font-weight: bold; }
     
     .calendar-day { height: 86px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); overflow: hidden; }
     .day-number { padding: 6px 8px; font-size: 1.1rem; font-weight: bold; }
     .today { background: rgba(59, 130, 246, 0.4) !important; border: 1px solid rgba(59, 130, 246, 0.7); }
     
     .month-event { 
-      font-size: 0.65rem; padding: 2px 5px; margin: 2px; border-radius: 4px; 
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
-      border-left: 3px solid rgba(255,255,255,0.5);
+      background: rgba(251, 146, 60, 0.9); font-size: 0.65rem; padding: 3px 6px; 
+      margin: 2px; border-radius: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
     }
 
     .clearfix::after { content: ""; display: table; clear: both; }
@@ -139,7 +138,7 @@
       </div>
       
       <div id="calendarGrid" class="calendar-grid clearfix">
-        <div class="week-number-header">&nbsp;</div>
+        <div class="calendar-day-header-kw">&nbsp;</div>
         <div class="calendar-day-header">Mo</div><div class="calendar-day-header">Di</div><div class="calendar-day-header">Mi</div>
         <div class="calendar-day-header">Do</div><div class="calendar-day-header">Fr</div><div class="calendar-day-header">Sa</div><div class="calendar-day-header">So</div>
         <div id="calendarDays"></div>
@@ -150,12 +149,6 @@
   <script>
     (function(){
       var calendarEvents = {}, viewDate = new Date(), currentView = 'month';
-
-      var fileColors = {
-        'basic.ics': '#3b82f6',
-        'calendar2.ics': '#f97316',
-        'feiertage-deutschland.ics': '#ef4444'
-      };
 
       function updateClock(){
         var now = new Date(), days = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
@@ -214,28 +207,21 @@
         var key = y+'-'+m+'-'+d;
         if(calendarEvents[key]) {
           calendarEvents[key].forEach(function(ev){
-            var e = document.createElement('div'); 
-            e.className = 'month-event'; 
-            e.textContent = ev.title;
-            if(ev.color) {
-              e.style.borderLeftColor = ev.color;
-              e.style.backgroundColor = ev.color + '40'; 
-            }
-            div.appendChild(e);
+            var e = document.createElement('div'); e.className = 'month-event'; e.textContent = ev.title; div.appendChild(e);
           });
         }
         container.appendChild(div);
       }
 
       function loadCal() {
-        Object.keys(fileColors).forEach(function(f) {
+        ['basic.ics', 'calendar2.ics', 'feiertage-deutschland.ics'].forEach(function(f) {
           var x = new XMLHttpRequest(); x.open('GET', 'calendars/' + f, true);
           x.onreadystatechange = function() {
             if (x.readyState === 4 && x.status === 200) {
               var lines = x.responseText.split('\n');
               for(var i=0; i<lines.length; i++) {
                 if(lines[i].indexOf('BEGIN:VEVENT')!==-1) {
-                  var ev = { color: fileColors[f] }, j = i;
+                  var ev = {}, j = i;
                   while(lines[j] && lines[j].indexOf('END:VEVENT')===-1){
                     if(lines[j].indexOf('DTSTART')!==-1){ var v = lines[j].split(':')[1]; if(v) ev.d = new Date(v.substring(0,4), parseInt(v.substring(4,6))-1, parseInt(v.substring(6,8))); }
                     if(lines[j].indexOf('SUMMARY')!==-1) ev.t = lines[j].split(':')[1].replace(/\\/g, "").trim();
@@ -244,7 +230,7 @@
                   if(ev.d){
                     var k = ev.d.getFullYear()+'-'+ev.d.getMonth()+'-'+ev.d.getDate();
                     if(!calendarEvents[k]) calendarEvents[k]=[]; 
-                    calendarEvents[k].push({title: ev.t || "Termin", color: ev.color});
+                    calendarEvents[k].push({title: ev.t || "Termin"});
                   }
                   i = j;
                 }
