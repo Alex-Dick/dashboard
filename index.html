@@ -88,15 +88,18 @@
     .icon-btn.active { background: #3b82f6; border-color: #60a5fa; }
 
     .calendar-grid { clear: both; padding: 12px; overflow: hidden; }
-    .calendar-day-header, .week-number, .calendar-day { float: left; width: 12.5%; box-sizing: border-box; }
+    
+    /* ANPASSUNG: KW Spalte schmal, Tage nehmen Rest ein */
+    .calendar-day-header, .calendar-day { float: left; width: 13.8%; box-sizing: border-box; }
+    .week-number-header, .week-number { float: left; width: 34px; box-sizing: border-box; }
+    
     .calendar-day-header { font-size: 0.9rem; text-align: center; opacity: 0.9; padding-bottom: 10px; font-weight: bold; }
-    .week-number { color: rgba(255,255,255,0.4); font-size: 0.8rem; text-align: center; padding-top: 25px; font-weight: bold; }
+    .week-number { color: rgba(59, 130, 246, 0.6); font-size: 0.8rem; text-align: center; padding-top: 25px; font-weight: bold; }
     
     .calendar-day { height: 86px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.08); overflow: hidden; }
     .day-number { padding: 6px 8px; font-size: 1.1rem; font-weight: bold; }
     .today { background: rgba(59, 130, 246, 0.4) !important; border: 1px solid rgba(59, 130, 246, 0.7); }
     
-    /* MODIFIZIERTER EVENT-STYLE FÜR FARB-INDICATOR */
     .month-event { 
       font-size: 0.65rem; padding: 2px 5px; margin: 2px; border-radius: 4px; 
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
@@ -136,7 +139,7 @@
       </div>
       
       <div id="calendarGrid" class="calendar-grid clearfix">
-        <div class="calendar-day-header">KW</div>
+        <div class="week-number-header">&nbsp;</div>
         <div class="calendar-day-header">Mo</div><div class="calendar-day-header">Di</div><div class="calendar-day-header">Mi</div>
         <div class="calendar-day-header">Do</div><div class="calendar-day-header">Fr</div><div class="calendar-day-header">Sa</div><div class="calendar-day-header">So</div>
         <div id="calendarDays"></div>
@@ -148,15 +151,14 @@
     (function(){
       var calendarEvents = {}, viewDate = new Date(), currentView = 'month';
 
-      // 1. FARBEN FÜR DIE ICS-DATEIEN FESTLEGEN
       var fileColors = {
-        'basic.ics': '#3b82f6',             /* Blau */
-        'calendar2.ics': '#f97316',         /* Orange */
-        'feiertage-deutschland.ics': '#ef4444' /* Rot */
+        'basic.ics': '#3b82f6',
+        'calendar2.ics': '#f97316',
+        'feiertage-deutschland.ics': '#ef4444'
       };
 
       function updateClock(){
-        var now = new Date(), days = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Fr.','Sa.','So.'];
+        var now = new Date(), days = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
         document.getElementById('hoursMinutes').textContent = (now.getHours()<10?'0':'')+now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes();
         document.getElementById('dateLine').textContent = days[now.getDay()] + ', ' + now.getDate() + '.' + (now.getMonth() + 1) + '.';
       }
@@ -215,13 +217,9 @@
             var e = document.createElement('div'); 
             e.className = 'month-event'; 
             e.textContent = ev.title;
-            // 2. FARBE HIER ANWENDEN
             if(ev.color) {
               e.style.borderLeftColor = ev.color;
-              e.style.backgroundColor = ev.color.replace('rgb', 'rgba').replace(')', ', 0.25)'); // Hintergrund leicht transparent
-              if(ev.color.indexOf('#') === 0) { // Falls Hex-Code genutzt wird
-                e.style.backgroundColor = ev.color + '40'; 
-              }
+              e.style.backgroundColor = ev.color + '40'; 
             }
             div.appendChild(e);
           });
