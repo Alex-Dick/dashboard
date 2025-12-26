@@ -58,10 +58,8 @@
     /* MONATSANSICHT */
     .month-table { display: grid; grid-template-columns: 40px repeat(7, 1fr); height: 100%; }
     .month-cell { border: 0.5px solid rgba(255,255,255,0.1); padding: 4px; min-height: 80px; background: rgba(255,255,255,0.03); }
-    
-    /* KW Header & Zellen: Jetzt komplett ohne Ränder */
     .month-head { text-align: center; font-weight: bold; font-size: 0.8rem; opacity: 0.7; height: 30px; display: flex; align-items: center; justify-content: center; background: transparent !important; border: none !important; }
-    .kw-cell { display: flex; align-items: center; justify-content: center; color: #3b82f6; font-size: 0.75rem; font-weight: bold; background: transparent !important; border: none !important; }
+    .kw-cell { display: flex; align-items: center; justify-content: center; color: #3b82f6; font-size: 0.75rem; font-weight: bold; background: transparent !important; }
 
     .day-n { font-weight: bold; font-size: 1rem; margin-bottom: 4px; }
     .m-event { 
@@ -70,7 +68,7 @@
       text-overflow: ellipsis;
     }
 
-    /* WOCHENANSICHT */
+    /* WOCHENANSICHT (GOOGLE STYLE) */
     .week-container { display: flex; position: relative; height: 1000px; padding-top: 40px; }
     .week-header-row { position: absolute; top: 0; left: 50px; right: 0; display: flex; height: 40px; }
     .week-head-day { flex: 1; text-align: center; font-size: 0.8rem; font-weight: bold; border-left: 1px solid rgba(255,255,255,0.1); }
@@ -81,7 +79,7 @@
     .day-col { flex: 1; position: relative; border-right: 1px solid rgba(255,255,255,0.1); }
     .event-card { 
       position: absolute; left: 2px; right: 2px; 
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.1); /* Dezent transparenter Hintergrund */
       border-radius: 4px; border-left: 4px solid transparent; 
       padding: 3px; font-size: 0.75rem; overflow: hidden;
     }
@@ -122,10 +120,11 @@
   <script>
     var calendarEvents = {}, viewDate = new Date(), currentView = 'month';
     
+    // Definition der Farben pro Datei
     const fileColors = {
-      'basic.ics': '#3b82f6',              
-      'calendar2.ics': '#f97316',          
-      'feiertage-deutschland.ics': '#ef4444' 
+      'basic.ics': '#3b82f6',              // Blau
+      'calendar2.ics': '#f97316',          // Orange
+      'feiertage-deutschland.ics': '#ef4444' // Rot
     };
 
     function updateClock(){
@@ -153,17 +152,13 @@
       var y = viewDate.getFullYear(), m = viewDate.getMonth();
       var months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
       document.getElementById('calendarLabel').textContent = months[m] + ' ' + y;
-      
       var grid = document.createElement('div'); grid.className = 'month-table';
-      
-      ['','Mo','Di','Mi','Do','Fr','Sa','So'].forEach(h => {
+      ['KW','Mo','Di','Mi','Do','Fr','Sa','So'].forEach(h => {
         var c = document.createElement('div'); c.className = 'month-cell month-head'; c.textContent = h; grid.appendChild(c);
       });
-
       var first = new Date(y, m, 1).getDay(); first = (first === 0) ? 6 : first - 1;
       var last = new Date(y, m + 1, 0).getDate();
       var dayCounter = 1 - first;
-
       for(var w=0; w<6; w++) {
         var kw = document.createElement('div'); kw.className = 'month-cell kw-cell';
         kw.textContent = getKW(new Date(y, m, dayCounter + (dayCounter < 1 ? first : 0)));
